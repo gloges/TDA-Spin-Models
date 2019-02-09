@@ -1,36 +1,54 @@
 import numpy as np
 import matplotlib.pyplot as pyplot
-from matplotlib.colors import LogNorm
-from ripser import ripser, plot_dgms
-from scipy.stats import kde
+import matplotlib.colors as colors
+import gudhi
 import os
 
-T = 1.4
+N = 50
+T = 1.9
 
-loc = r'C:\Users\gerg1\Box Sync\TDA\Data_2d_Ising_Wolff_N=50\%s' % T
-files = os.listdir(loc)
-data = [np.loadtxt("%s\%s" % (loc, f), dtype=int) for f in files]
+fileDir = os.path.dirname(os.path.realpath('__file__'))
+pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
 
+if not os.path.exists(pathNT):
+    print("Folder does not exist: ", pathNT)
+    quit()
 
-h1s = [(ripser(d)['dgms'])[1] for d in data]
+files = os.listdir(pathNT)
+data = [np.loadtxt("%s\%s" % (pathNT, f), dtype=int) for f in files]
+print("Data imported:", len(data), "runs")
 
-born1s = np.empty(0)
-death1s = np.empty(0)
-for i in range(len(h1s)):
-    born1s = np.append(born1s, h1s[i][:, 0])
-    death1s = np.append(death1s, h1s[i][:, 1])
+alphaComplexes = [gudhi.AlphaComplex(d) for d in data]
+print("Alpha complexes constructed")
 
-life1s = death1s - born1s
+# Not sure what max_alpha_square controls
+simplexTrees = [ac.create_simplex_tree(max_alpha_square=20)
+                for ac in alphaComplexes]
+print("Simplex trees created")
 
-# plot_dgms(dgms, lifetime=True, show=True)
+persistData = [st.persistence() for st in simplexTrees]
+combinedPersistData = [a for b in persistData for a in b]
+print("Persistence data computed")
 
-k = kde.gaussian_kde([born1s, life1s])
-xi, yi = np.mgrid[born1s.min():born1s.max():100 * 1j,
-                  life1s.min():life1s.max():100 * 1j]
-zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+pplot = gudhi.plot_persistence_diagram(combinedPersistData, alpha=0.01)
+pplot.show()
 
-fig, axes = pyplot.subplots(1, 2, sharey=True, figsize=(12, 5))
+cpd = np.array([np.asarray([a[0], a[1][0], a[1][1]])
+                for a in combinedPersistData])
 
-axes[0].hist2d(born1s, life1s, norm=LogNorm())
-axes[1].pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud')
+h1indices = (cpd[:, 0] == 1) & (np.isfinite(cpd[:, 2]))
+h1Data = cpd[h1indices]
+
+h1born = h1Data[:, 1]
+h1death = h1Data[:, 2]
+
+fig, axes = pyplot.subplots(2, 2, sharex=True, sharey='row', figsize=(10, 10))
+pyplot.subplots_adjust(wspace=0, hspace=0)
+
+axes[0, 0].scatter(h1born, h1death, alpha=0.01)
+axes[0, 1].hist2d(h1born, h1death, bins=20,
+                  norm=colors.SymLogNorm(linthresh=1))
+axes[1, 0].scatter(h1born, h1death - h1born, alpha=0.01)
+axes[1, 1].hist2d(h1born, h1death - h1born, bins=20,
+                  norm=colors.SymLogNorm(linthresh=1))
 pyplot.show()
