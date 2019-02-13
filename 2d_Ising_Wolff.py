@@ -8,7 +8,7 @@ import time
 # Wolff (cluster) algorithm
 
 N = 50  # Size of grid is NxN (N^2 total spins)
-T = 1.9   # Temperature
+T = 3.5   # Temperature
 K = 20   # Iterate until K * (N^2) spins have been flipped in total
 
 choices = [-1, 1]   # Values to choose from to initialize grid
