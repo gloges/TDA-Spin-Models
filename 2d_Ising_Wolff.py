@@ -10,15 +10,15 @@ import time
 
 N = 50  # Size of grid is NxN (N^2 total spins)
 
-T = 3.5   # Temperature
-# T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
+#T = 2.96   # Temperature
+T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
-K = 2   # Iterate until K * (N^2) spins have been flipped in total
+K = 20   # Iterate until K * (N^2) spins have been flipped in total
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
 display = False    # Display final spin configuration
-save = False    # Save final spin configuration to file
+save = True    # Save final spin configuration to file
 progress = False     # Print progress during flips
 
 
@@ -92,8 +92,8 @@ if save:
 
     fileDir = os.path.dirname(os.path.realpath('__file__'))
     pathN = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s' % N)
-    pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
-    filename = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s\%s.txt'
+    pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s/%s' % (N, T))
+    filename = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s/%s/%s.txt'
                             % (N, T, int(time.time())))
 
     # Create folders if necessary
