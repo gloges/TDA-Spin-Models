@@ -10,7 +10,11 @@ import time
 
 N = 50  # Size of grid is NxN (N^2 total spins)
 
+<<<<<<< HEAD
 #T = 2.96   # Temperature
+=======
+# T = 3.5   # Temperature
+>>>>>>> 626db4dbdd75941dcbbb069beb5e00a6286f3016
 T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
 K = 20   # Iterate until K * (N^2) spins have been flipped in total

@@ -5,13 +5,13 @@ import gudhi
 import os
 
 N = 50    # Hard-coded parameters to specify the folder of spin
-T = 3.5	  # configurations to run through (2d Wolff)
+T = 2.01	  # configurations to run through (2d Wolff)
 
 # Locate folder of spin data
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
 if not os.path.exists(pathNT):
-    print("Folder does not exist: ", pathNT)
+    print("Folder does not exist:", pathNT)
     quit()
 
 # Load spin config data from folder
@@ -24,7 +24,8 @@ print("Alpha complexes constructed")
 
 # Appropriate value of α^2? Needs to be smaller than N to get
 # the speed-up, but large enough to capture all of the interesting stuff...
-simplexTrees = [ac.create_simplex_tree(max_alpha_square=20)
+# Leave unspecified?
+simplexTrees = [ac.create_simplex_tree(max_alpha_square=30)
                 for ac in alphaComplexes]
 print("Simplex trees created")
 
