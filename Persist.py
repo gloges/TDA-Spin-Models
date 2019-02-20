@@ -5,7 +5,7 @@ import gudhi
 import os
 
 N = 50    # Hard-coded parameters to specify the folder of spin
-T = 2.01	  # configurations to run through (2d Wolff)
+T = 3.0	  # configurations to run through (2d Wolff)
 
 # Locate folder of spin data
 fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -54,6 +54,7 @@ pplot.show()
 # Bins now are on-the-fly. Will need to be more systematic in binning.
 fig, axes = pyplot.subplots(2, 2, sharex=True, sharey='row', figsize=(10, 10))
 pyplot.subplots_adjust(wspace=0.05, hspace=0.05)
+fig.suptitle("T = %.2f, %s runs" % (T, len(data)))
 
 axes[0, 0].scatter(h1born, h1death, alpha=0.01)
 axes[0, 0].set_ylabel('Death')
