@@ -25,7 +25,7 @@ print("Alpha complexes constructed")
 # Appropriate value of α^2? Needs to be smaller than N to get
 # the speed-up, but large enough to capture all of the interesting stuff...
 # Leave unspecified?
-simplexTrees = [ac.create_simplex_tree(max_alpha_square=30)
+simplexTrees = [ac.create_simplex_tree(max_alpha_square=25)
                 for ac in alphaComplexes]
 print("Simplex trees created")
 
@@ -58,12 +58,12 @@ fig.suptitle("T = %.2f, %s runs" % (T, len(data)))
 
 axes[0, 0].scatter(h1born, h1death, alpha=0.01)
 axes[0, 0].set_ylabel('Death')
-axes[0, 1].hist2d(h1born, h1death, bins=20,
+axes[0, 1].hist2d(h1born, h1death, bins=25, range=[[0, 25], [0, 25]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 0].scatter(h1born, h1death - h1born, alpha=0.01)
 axes[1, 0].set_ylabel('Lifetime')
 axes[1, 0].set_xlabel('Birth')
-axes[1, 1].hist2d(h1born, h1death - h1born, bins=20,
+axes[1, 1].hist2d(h1born, h1death - h1born, bins=25, range=[[0, 25], [0, 25]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 1].set_xlabel('Birth')
 pyplot.show()
