@@ -5,7 +5,7 @@ import gudhi
 import os
 
 N = 50    # Hard-coded parameters to specify the folder of spin
-T = 3.0	  # configurations to run through (2d Wolff)
+T = 2.0	  # configurations to run through (2d Wolff)
 
 # Locate folder of spin data
 fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -25,7 +25,7 @@ print("Alpha complexes constructed")
 # Appropriate value of α^2? Needs to be smaller than N to get
 # the speed-up, but large enough to capture all of the interesting stuff...
 # Leave unspecified?
-simplexTrees = [ac.create_simplex_tree(max_alpha_square=25)
+simplexTrees = [ac.create_simplex_tree()
                 for ac in alphaComplexes]
 print("Simplex trees created")
 
@@ -40,9 +40,15 @@ cpd = np.array([np.asarray([a[0], a[1][0], a[1][1]])
 
 # Extract H1 data for which the lifetime is not infinite
 h1indices = (cpd[:, 0] == 1) & (np.isfinite(cpd[:, 2]))
-h1Data = cpd[h1indices]
-h1born = h1Data[:, 1]
-h1death = h1Data[:, 2]
+h1Data = cpd[h1indices, 1:]
+h1born = h1Data[:, 0]
+h1death = h1Data[:, 1]
+
+
+# WORKING ON CLEANER CUMULATIVE DATA
+# 'unique' right now is not unique??
+unique, counts = np.unique(h1Data, axis=0, return_counts=True)
+print(unique, counts)
 
 
 # Traditional persistance diagram
