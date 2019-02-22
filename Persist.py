@@ -40,15 +40,15 @@ cpd = np.array([np.asarray([a[0], a[1][0], a[1][1]])
 
 # Extract H1 data for which the lifetime is not infinite
 h1indices = (cpd[:, 0] == 1) & (np.isfinite(cpd[:, 2]))
-h1Data = cpd[h1indices, 1:]
+h1Data = np.round(cpd[h1indices, 1:], decimals=5)
+
 h1born = h1Data[:, 0]
 h1death = h1Data[:, 1]
 
 
-# WORKING ON CLEANER CUMULATIVE DATA
-# 'unique' right now is not unique??
-unique, counts = np.unique(h1Data, axis=0, return_counts=True)
-print(unique, counts)
+# More compact cumulative data
+h1borndeath, counts = np.unique(h1Data, axis=0, return_counts=True)
+print(h1borndeath, counts)
 
 
 # Traditional persistance diagram
