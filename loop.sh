@@ -1,5 +1,5 @@
 #! /bin/bash
-for T in {250..300}
+for T in {221..249}
 do
    for a in {1..200}
       do
