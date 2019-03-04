@@ -10,7 +10,7 @@ import time
 
 N = 50  # Size of grid is NxN (N^2 total spins)
 
-# T = 3.0   # Temperature
+# T = 2.2   # Temperature
 T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
 K = 20   # Iterate until K * (N^2) spins have been flipped in total
@@ -107,7 +107,7 @@ if save:
 
 if display:
     fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
-    axes[0].plot(abs(m))
+    axes[0].scatter(range(0, len(m)), abs(m), marker='.', c='k', alpha=0.15)
     axes[1].matshow(grid)
     axes[1].axis('off')
     pyplot.show()

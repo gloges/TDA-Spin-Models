@@ -8,7 +8,7 @@ N = 50
 magData = np.empty([0, 2])
 
 
-def MTH(T):
+def M_Onsag(T):
     if T > 2.269:
         return 0
     else:
@@ -18,7 +18,8 @@ def MTH(T):
 # Locate folder of spin data
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
-for T in np.arange(1.5, 3.0, 0.01):
+for i in np.arange(200, 240, 1):
+    T = i / 100
     print(T)
     pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
     if not os.path.exists(pathNT):
@@ -34,9 +35,9 @@ for T in np.arange(1.5, 3.0, 0.01):
             magData = np.append(magData, [[T, m]], axis=0)
 
 
-tRange = np.linspace(1.5, 3.0, 500)
-mExact = [MTH(t) for t in tRange]
+tRange = np.linspace(0, 4, 500)
+mExact = [M_Onsag(t) for t in tRange]
 
 pyplot.plot(tRange, mExact, c='r', zorder=0)
-pyplot.scatter(magData[:, 0], magData[:, 1], alpha=0.01, c='k', zorder=1)
+pyplot.scatter(magData[:, 0], magData[:, 1], alpha=0.02, c='k', zorder=1)
 pyplot.show()
