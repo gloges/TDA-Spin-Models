@@ -13,7 +13,7 @@ N = 50  # Size of grid is NxN (N^2 total spins)
 # T = 2.2   # Temperature
 T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
-K = 20   # Iterate until K * (N^2) spins have been flipped in total
+K = 20   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
