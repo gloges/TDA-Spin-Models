@@ -3,33 +3,57 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{physics}
 
 \usepackage{hyperref}
+
+\renewcommand{\d}[2][]{\mathrm{d}^{#1}{#2}}
+
 
 
 \begin{document}
 
-\tableofcontents
 
 \section{Introduction}
-\begin{itemize}
-    \item Why?
-    \item Big picture \& lit.
-\end{itemize}
 
 
 \section{TDA}
-\begin{itemize}
-    \item Basic techniques
-    \item Persistence diagrams and images
-\end{itemize}
+Given any data set (for us this will be physical locations, but could be anything), construct $\alpha$-complex then simplex tree then persistence diagram (more here, homology \&c.).
+
+The persistence diagram contains information about the size of features in the data. For statistical methods it is necessary (?) to introduce the so-called persistence image, which is a version of the persistence diagram that is robust to small perturbations in the persistence data. From the persistence data, $\{b_i,p_i\}$, one constructs
+\begin{align}
+    \rho(x,y) &= \sum_i w(b_i,p_i)\;\frac{1}{2\pi\sigma^2}\exp\left[-\frac{(x-b_i)^2+(y-p_i)^2}{2\sigma^2}\right]
+\end{align}
+where the weighting function $w$ should satisfy $w(b_i,0)=0$ (why? for robustness of features that have just appeared, favor longer-lived features which are more interesting than the noise). The persistence image is then the vector obtained by integrating $\rho$ over a series of ``pixels'' (bins):
+\begin{align}
+    I_\text{p} &= \iint\limits_\text{p}\rho(x,y)\,\d{x}\d{y}
+\end{align}
+The persistence data has been transformed into a vector in $\mathbb{R}^n$ (for $n$ not too large...).
+
+\begin{figure}[b]
+    \centering
+    \includegraphics[]{}
+    \caption{Example PD$\rightarrow\rho\rightarrow$PI process.}
+\end{figure}
+
 
 
 \section{Spin Models}
-\begin{itemize}
-    \item Basic description (exact soln for 2d Ising), choice of normalizations...
-    \item Phase transition and critical behavior
-\end{itemize}
+Here we will apply the techniques of TDA to lattice spin systems. The traditional Ising model is rich in behaviour, despite being simple to describe; in two or more dimensions there is a second-order phase transition from an ordered to random state. While it is relatively easy to distinguish between these states simply by looking at the spin configurations, there exists systems in which the different states are not as readily identified. It has been demonstrated that one can use machine learning to identify phases of matter for such spin systems. We will show that this classification can also be done using persistance images built from the spin configurations, where physical characteristics of the data such as sizes of features play a central role.
+
+As a starting point we begin with the 2d Ising model on a square lattice:
+\begin{equation}
+    \beta H = \sum_{\langle ij\rangle}s_is_j + h\sum_is_i
+\end{equation}
+where the sum is over all pairs of adjacent spins (check normalization). Each $s_i$ takes values in $\{-1,1\}$. We will be interested in the case of no external magnetic field, $h=0$.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[]{}
+    \caption{Example spin configurations above and below phase transition.}
+\end{figure}
+
+We take as data the physical locations of spins which all point in the same direction as the majority of spins after reaching equilibrium with a thermal bath. At very low temperatures when nearly all spins are aligned cycles are born and die very quickly, while at high temperatures features in the spins may be longer-lived.
 
 
 \section{Results}
@@ -38,6 +62,8 @@
     \item Classification with different methods (logreg, kmeans, PCA, \&c.)
     \item Estimation of critical temperature from unsupervised learning methods
 \end{itemize}
+
+(TO DO:) Near $T_\text{c}$ we expect the characteristic scale-invariance of critical phenomena to be evident in the persistance diagrams/images. By considering temperatures close to $T_\text{c}$ we hope to find signatures of the diverging correlation length in the derived topological data.
 
 
 \section{Discussion}
