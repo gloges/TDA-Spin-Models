@@ -20,9 +20,9 @@ K = 500   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = False
-save = True
-progress = False
+display = True
+save = False
+progress = True
 
 
 # Returns randomized grid
