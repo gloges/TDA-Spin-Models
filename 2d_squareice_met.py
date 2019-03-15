@@ -3,20 +3,17 @@ import matplotlib.pyplot as pyplot
 import os
 import time
 
-# 2d, Z2 gauge Ising spin model
+# 2d, Square Ice spin model
 # Lattice sites form a square grid and are labelled by 0<=x,y<N
 # Spins lie on edges connecting adjacent lattice sites and are
 # labelled by (x,y,a):
 #   - 0<=x,y<N give the corresponding lattice site.
 #   - a=0,1 respectively label the horizonal edge to the right
 #       of (x,y) and the vertical edge above (x,y).
-# Each plaquette is labelled by its lower-right lattice site.
-# See "https://www.itp3.uni-stuttgart.de/downloads/
-#         Lattice_gauge_theory_SS_2009/Chapter3.pdf" for a discussion.
 
 N = 50  # Size of grid is NxN (2*N^2 total spins)
-T = 0.001   # Temperature
-K = 100   # Average number of flips per spin
+T = 1.0   # Temperature
+K = 10   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
@@ -35,13 +32,13 @@ def randomSite():
     return np.random.randint(0, N, 2)
 
 
-# Returns product of four spins on the plaquette labelled by (x,y)
-def plaqProduct(g, x, y):
+# Returns sum of four spins adjacent to vertex labelled by (x,y)
+def vertSum(g, x, y):
     s1 = g[x % N, y % N, 0]
     s2 = g[x % N, y % N, 1]
-    s3 = g[(x + 1) % N, y % N, 1]
-    s4 = g[x % N, (y + 1) % N, 0]
-    return s1 * s2 * s3 * s4
+    s3 = g[(x - 1) % N, y % N, 0]
+    s4 = g[x % N, (y - 1) % N, 1]
+    return s1 + s2 + s3 + s4
 
 
 # Returns energy of spin configuration, g
@@ -49,17 +46,17 @@ def energy(g):
     nrg = 0
     for x in range(N):
         for y in range(N):
-            nrg -= plaqProduct(g, x, y)
+            nrg += vertSum(g, x, y) ** 2
     return nrg / (2 * N ** 2)
 
 
 # Change in energy from flipping spin at (x,y,a)
 def deltaE(g, x, y, a):
-    dE = 2 * plaqProduct(g, x, y)
-    if a == 0:
-        dE += 2 * plaqProduct(g, x, y - 1)
-    else:
-        dE += 2 * plaqProduct(g, x - 1, y)
+    dE = 2 * vertSum(g, x, y) ** 2
+    # 
+    # 
+    # 
+    # 
     return dE
 
 
@@ -126,6 +123,8 @@ for k in range(K):
     m = np.append(m, np.average(grid))
     e = np.append(e, energy(grid))
 
+avenrg = [np.mean(e[:(i + 1)]) for i in range(len(e))]
+
 
 if save:
     # Scan through the final spin configuration and save the locations
@@ -163,7 +162,7 @@ if display:
 
     fig, axes = pyplot.subplots(1, 3, figsize=(15, 4))
     axes[0].plot(m)
-    axes[1].plot(e)
+    axes[1].plot(avenrg)
     axes[2].imshow(zValues)
     axes[2].axis('off')
     pyplot.show()

@@ -15,13 +15,13 @@ import time
 # by a,b=0,1,2 where a!=b correspond to the x,y,z-directions.
 
 N = 20  # Size of grid is NxNxN (3*N^3 total spins)
-T = 1.3   # Temperature
-K = 20   # Number of iterations is K * (3*N^3)
+T = 10.0   # Temperature
+K = 50   # Number of iterations is K * (3*N^3)
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = False
-save = True
+display = True
+save = False
 progress = True
 
 
@@ -60,18 +60,30 @@ def plaqProduct(g, x, y, z, a, b):
     return s1 * s2 * s3 * s4
 
 
+# Returns energy of spin configuration, g
+def energy(g):
+    nrg = 0
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                nrg -= plaqProduct(g, x, y, z, 0, 1)
+                nrg -= plaqProduct(g, x, y, z, 1, 2)
+                nrg -= plaqProduct(g, x, y, z, 2, 0)
+    return nrg / (3 * N ** 3)
+
+
 # Change in energy from flipping spin at (x,y,z,a)
 def deltaE(g, x, y, z, a):
-    dE = 2
+    dE = 0
     if a != 0:
-        dE *= plaqProduct(g, x, y, z, a, 0)
-        dE *= plaqProduct(g, x - 1, y, z, a, 0)
+        dE += 2 * plaqProduct(g, x, y, z, a, 0)
+        dE += 2 * plaqProduct(g, x - 1, y, z, a, 0)
     if a != 1:
-        dE *= plaqProduct(g, x, y, z, a, 1)
-        dE *= plaqProduct(g, x, y - 1, z, a, 1)
+        dE += 2 * plaqProduct(g, x, y, z, a, 1)
+        dE += 2 * plaqProduct(g, x, y - 1, z, a, 1)
     if a != 2:
-        dE *= plaqProduct(g, x, y, z, a, 2)
-        dE *= plaqProduct(g, x, y, z - 1, a, 2)
+        dE += 2 * plaqProduct(g, x, y, z, a, 2)
+        dE += 2 * plaqProduct(g, x, y, z - 1, a, 2)
     return dE
 
 
@@ -101,6 +113,7 @@ grid = randomGrid()
 # Keep track of average magnitization as a diagnostic
 # for reaching thermal equilibrium
 m = [np.average(grid)]
+e = [energy(grid)]
 
 # Wash the grid K times
 for k in range(K):
@@ -108,7 +121,7 @@ for k in range(K):
         print("%4.1f" % (100 * k / K), "%")
     grid = wash(grid)
     m = np.append(m, np.average(grid))
-
+    e = np.append(e, energy(grid))
 
 if save or display:
     maj = m[-1]
@@ -142,9 +155,11 @@ if save:
 
 
 if display:
-    fig = pyplot.figure(figsize=(10, 5))
-    ax0 = fig.add_subplot(1, 2, 1)
+    fig = pyplot.figure(figsize=(15, 5))
+    ax0 = fig.add_subplot(1, 3, 1)
     ax0.plot(m)
-    ax1 = fig.add_subplot(1, 2, 2, projection='3d')
-    ax1.scatter(majLoc[:, 0], majLoc[:, 1], majLoc[:, 2], s=1, c='k')
+    ax1 = fig.add_subplot(1, 3, 2)
+    ax1.plot(e)
+    ax2 = fig.add_subplot(1, 3, 3, projection='3d')
+    ax2.scatter(majLoc[:, 0], majLoc[:, 1], majLoc[:, 2], s=1, c='k')
     pyplot.show()
