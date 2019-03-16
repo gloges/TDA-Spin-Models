@@ -39,29 +39,16 @@ def randomSite():
     return np.random.randint(0, N, 3)
 
 
-# Returns product of four spins on the plaquette labelled by (x,y,z,a,b)
-def plaqProduct(g, x, y, z, a, b):
-    if a == b:
-        print("Error: a==b")
-        return 0
-    s1 = g[x % N, y % N, z % N, a]
-    s2 = g[x % N, y % N, z % N, b]
+# Returns sum of spins at vertex (x,y,z)
+def vertSum(g, x, y, z):
+    s1 = g[x % N, y % N, z % N, 0]
+    s2 = g[x % N, y % N, z % N, 1]
+    s3 = g[x % N, y % N, z % N, 2]
+    s4 = g[(x - 1) % N, y % N, z % N, 0]
+    s5 = g[x % N, (y - 1) % N, z % N, 1]
+    s6 = g[x % N, y % N, (z - 1) % N, 2]
 
-    if a == 0:
-        s3 = g[(x + 1) % N, y % N, z % N, b]
-    elif a == 1:
-        s3 = g[x % N, (y + 1) % N, z % N, b]
-    else:
-        s3 = g[x % N, y % N, (z + 1) % N, b]
-
-    if b == 0:
-        s4 = g[(x + 1) % N, y % N, z % N, a]
-    elif b == 1:
-        s4 = g[x % N, (y + 1) % N, z % N, a]
-    else:
-        s4 = g[x % N, y % N, (z + 1) % N, a]
-
-    return s1 * s2 * s3 * s4
+    return s1 + s2 + s3 + s4 + s5 + s6
 
 
 # Returns energy of spin configuration, g
@@ -70,25 +57,22 @@ def energy(g):
     for x in range(N):
         for y in range(N):
             for z in range(N):
-                nrg -= plaqProduct(g, x, y, z, 0, 1)
-                nrg -= plaqProduct(g, x, y, z, 1, 2)
-                nrg -= plaqProduct(g, x, y, z, 2, 0)
+                nrg += vertSum(g, x, y, z) ** 2
     return nrg / (3 * N ** 3)
 
 
 # Change in energy from flipping spin at (x,y,z,a)
 def deltaE(g, x, y, z, a):
-    dE = 0
-    if a != 0:
-        dE += 2 * plaqProduct(g, x, y, z, a, 0)
-        dE += 2 * plaqProduct(g, x - 1, y, z, a, 0)
-    if a != 1:
-        dE += 2 * plaqProduct(g, x, y, z, a, 1)
-        dE += 2 * plaqProduct(g, x, y - 1, z, a, 1)
-    if a != 2:
-        dE += 2 * plaqProduct(g, x, y, z, a, 2)
-        dE += 2 * plaqProduct(g, x, y, z - 1, a, 2)
-    return dE
+    if a == 0:
+        Ecurr = vertSum(g, x, y, z) ** 2 + vertSum(g, (x + 1) % N, y, z) ** 2
+        Enew = (vertSum(g, x, y, z) - 2 * g[x, y, z, a]) ** 2 + (vertSum(g, (x + 1) % N, y, z) - 2 * g[x, y, z, a]) ** 2
+    elif a == 1:
+        Ecurr = vertSum(g, x, y, z) ** 2 + vertSum(g, x, (y + 1) % N, z) ** 2
+        Enew = (vertSum(g, x, y, z) - 2 * g[x, y, z, a]) ** 2 + (vertSum(g, x, (y + 1) % N, z) - 2 * g[x, y, z, a]) ** 2
+    else:
+        Ecurr = vertSum(g, x, y, z) ** 2 + vertSum(g, x, y, (z + 1) % N) ** 2
+        Enew = (vertSum(g, x, y, z) - 2 * g[x, y, z, a]) ** 2 + (vertSum(g, x, y, (z + 1) % N) - 2 * g[x, y, z, a]) ** 2
+    return Enew - Ecurr
 
 
 # Determine if spin at (x,y,z,a) should flip
@@ -144,9 +128,9 @@ if save:
     # Scan through the final spin configuration and save the locations
     # of those spins which are (anti-)aligned with the majority
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
-    pathNT = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
-    filename = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
+    pathN = os.path.join(fileDir, 'Data_3d_squareice_Met_N=%s_K=%s' % (N, K))
+    pathNT = os.path.join(fileDir, 'Data_3d_squareice_Met_N=%s_K=%s/%s' % (N, K, T))
+    filename = os.path.join(fileDir, 'Data_3d_squareice_Met_N=%s_K=%s/%s/%s.txt'
                             % (N, K, T, int(time.time())))
 
     # Create folders if necessary

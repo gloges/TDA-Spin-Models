@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as pyplot
 import os
+import sys
 import time
 
-# 2d, Square Ice spin model
+# 2d, Square ice spin model
 # Lattice sites form a square grid and are labelled by 0<=x,y<N
 # Spins lie on edges connecting adjacent lattice sites and are
 # labelled by (x,y,a):
@@ -12,13 +13,16 @@ import time
 #       of (x,y) and the vertical edge above (x,y).
 
 N = 50  # Size of grid is NxN (2*N^2 total spins)
-T = 1.0   # Temperature
-K = 10   # Average number of flips per spin
+
+# T = 0.001   # Temperature
+T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
+
+K = 200   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = True
-save = False
+display = False
+save = True
 progress = True
 
 
@@ -32,7 +36,7 @@ def randomSite():
     return np.random.randint(0, N, 2)
 
 
-# Returns sum of four spins adjacent to vertex labelled by (x,y)
+# Returns product of four spins on the plaquette labelled by (x,y)
 def vertSum(g, x, y):
     s1 = g[x % N, y % N, 0]
     s2 = g[x % N, y % N, 1]
@@ -52,12 +56,13 @@ def energy(g):
 
 # Change in energy from flipping spin at (x,y,a)
 def deltaE(g, x, y, a):
-    dE = 2 * vertSum(g, x, y) ** 2
-    # 
-    # 
-    # 
-    # 
-    return dE
+    if a == 0:
+        Ecurr = vertSum(g, x, y) ** 2 + vertSum(g, (x + 1) % N, y) ** 2
+        Enew = (vertSum(g, x, y) - 2 * g[x, y, a]) ** 2 + (vertSum(g, (x + 1) % N, y) - 2 * g[x, y, a]) ** 2
+    else:
+        Ecurr = vertSum(g, x, y) ** 2 + vertSum(g, x, (y + 1) % N) ** 2
+        Enew = (vertSum(g, x, y) - 2 * g[x, y, a]) ** 2 + (vertSum(g, x, (y + 1) % N) - 2 * g[x, y, a]) ** 2
+    return Enew - Ecurr
 
 
 # Determine if spin at (x,y,a) should flip
@@ -80,31 +85,19 @@ def wash(g):
     return gNew
 
 
-# Gives value of spin closest to (x,y)
-# (For displaying purposes)
-def G(g, x, y):
-    xInt = int(np.floor(x))
-    yInt = int(np.floor(y))
-    xFrac = x - xInt
-    yFrac = y - yInt
+# Get positions of spins aligned with the majority
+def majSpinPosn(g):
+    maj = np.average(g)
+    majPosn = np.empty([0, 2])
 
-    if yFrac > xFrac:
-        xA = xInt
-        if yFrac < 1 - xFrac:
-            yA = yInt
-            a = 1
-        else:
-            yA = yInt + 1
-            a = 0
-    else:
-        yA = yInt
-        if yFrac <= 1 - xFrac:
-            xA = xInt
-            a = 0
-        else:
-            xA = xInt + 1
-            a = 1
-    return g[xA % N, yA % N, a]
+    for x in range(N):
+        for y in range(N):
+            if g[x, y, 0] * maj > 0:
+                majPosn = np.append(majPosn, [[x + 0.5, y]], axis=0)
+            if g[x, y, 1] * maj > 0:
+                majPosn = np.append(majPosn, [[x, y + 0.5]], axis=0)
+
+    return majPosn
 
 
 # Initialize grid of spins
@@ -123,26 +116,16 @@ for k in range(K):
     m = np.append(m, np.average(grid))
     e = np.append(e, energy(grid))
 
-avenrg = [np.mean(e[:(i + 1)]) for i in range(len(e))]
-
 
 if save:
-    # Scan through the final spin configuration and save the locations
-    # of those spins which are (anti-)aligned with the majority
-    maj = m[-1]
-    toSave = np.empty([0, 2])
-    for x in range(N):
-        for y in range(N):
-            if grid[x, y, 0] * maj > 0:
-                toSave = np.append(toSave, [[x + 0.5, y]], axis=0)
-            if grid[x, y, 1] * maj > 0:
-                toSave = np.append(toSave, [[x, y + 0.5]], axis=0)
+    # Save the locations of those spins which are aligned with the majority
+    toSave = majSpinPosn(grid)
 
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s' % N)
-    pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s/%s' % (N, T))
-    filename = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s/%s/%s.txt'
-                            % (N, T, int(time.time())))
+    pathN = os.path.join(fileDir, 'Data_2d_squareice_Met_N=%s_K=%s' % (N, K))
+    pathNT = os.path.join(fileDir, 'Data_2d_squareice_Met_N=%s_K=%s/%s' % (N, K, T))
+    filename = os.path.join(fileDir, 'Data_2d_squareice_Met_N=%s_K=%s/%s/%s.txt'
+                            % (N, K, T, int(time.time())))
 
     # Create folders if necessary
     if not os.path.exists(pathN):
@@ -156,13 +139,14 @@ if save:
 if display:
     # Plot the magnitization as a function of number of washes,
     # and display the final spin configuration
-    xRange = np.linspace(0, N, 10 * N)
-    yRange = np.linspace(0, N, 10 * N)
-    zValues = [[G(grid, x, y) for x in xRange] for y in yRange]
+    majPosn = majSpinPosn(grid)
 
-    fig, axes = pyplot.subplots(1, 3, figsize=(15, 4))
+    fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
     axes[0].plot(m)
-    axes[1].plot(avenrg)
-    axes[2].imshow(zValues)
-    axes[2].axis('off')
+    axes[1].plot(e)
+    pyplot.show()
+
+    pyplot.figure(figsize=(5, 5))
+    pyplot.scatter(majPosn[:, 0], majPosn[:, 1], marker='.', s=10, c='k')
+    pyplot.axis('off')
     pyplot.show()

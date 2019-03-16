@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as pyplot
 import os
+import sys
 import time
 
 # 2d, Z2 gauge Ising spin model
@@ -15,13 +16,16 @@ import time
 #         Lattice_gauge_theory_SS_2009/Chapter3.pdf" for a discussion.
 
 N = 50  # Size of grid is NxN (2*N^2 total spins)
-T = 0.001   # Temperature
-K = 100   # Average number of flips per spin
+
+# T = 0.7   # Temperature
+T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
+
+K = 200   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = True
-save = False
+display = False
+save = True
 progress = True
 
 
@@ -83,31 +87,19 @@ def wash(g):
     return gNew
 
 
-# Gives value of spin closest to (x,y)
-# (For displaying purposes)
-def G(g, x, y):
-    xInt = int(np.floor(x))
-    yInt = int(np.floor(y))
-    xFrac = x - xInt
-    yFrac = y - yInt
+# Returns positions of spins aligned with majority
+def majSpinPosn(g):
+    maj = np.average(g)
+    majPosn = np.empty([0, 2])
 
-    if yFrac > xFrac:
-        xA = xInt
-        if yFrac < 1 - xFrac:
-            yA = yInt
-            a = 1
-        else:
-            yA = yInt + 1
-            a = 0
-    else:
-        yA = yInt
-        if yFrac <= 1 - xFrac:
-            xA = xInt
-            a = 0
-        else:
-            xA = xInt + 1
-            a = 1
-    return g[xA % N, yA % N, a]
+    for x in range(N):
+        for y in range(N):
+            if g[x, y, 0] * maj > 0:
+                majPosn = np.append(majPosn, [[x + 0.5, y]], axis=0)
+            if g[x, y, 1] * maj > 0:
+                majPosn = np.append(majPosn, [[x, y + 0.5]], axis=0)
+
+    return majPosn
 
 
 # Initialize grid of spins
@@ -130,20 +122,13 @@ for k in range(K):
 if save:
     # Scan through the final spin configuration and save the locations
     # of those spins which are (anti-)aligned with the majority
-    maj = m[-1]
-    toSave = np.empty([0, 2])
-    for x in range(N):
-        for y in range(N):
-            if grid[x, y, 0] * maj > 0:
-                toSave = np.append(toSave, [[x + 0.5, y]], axis=0)
-            if grid[x, y, 1] * maj > 0:
-                toSave = np.append(toSave, [[x, y + 0.5]], axis=0)
+    toSave = majSpinPosn(grid)
 
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s' % N)
-    pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s/%s' % (N, T))
-    filename = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s/%s/%s.txt'
-                            % (N, T, int(time.time())))
+    pathN = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
+    pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
+    filename = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
+                            % (N, K, T, int(time.time())))
 
     # Create folders if necessary
     if not os.path.exists(pathN):
@@ -157,13 +142,14 @@ if save:
 if display:
     # Plot the magnitization as a function of number of washes,
     # and display the final spin configuration
-    xRange = np.linspace(0, N, 10 * N)
-    yRange = np.linspace(0, N, 10 * N)
-    zValues = [[G(grid, x, y) for x in xRange] for y in yRange]
+    majPosn = majSpinPosn(grid)
 
-    fig, axes = pyplot.subplots(1, 3, figsize=(15, 4))
+    fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
     axes[0].plot(m)
     axes[1].plot(e)
-    axes[2].imshow(zValues)
-    axes[2].axis('off')
+    pyplot.show()
+
+    pyplot.figure(figsize=(5, 5))
+    pyplot.scatter(majPosn[:, 0], majPosn[:, 1], marker='.', s=10, c='k')
+    pyplot.axis('off')
     pyplot.show()

@@ -1,15 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as pyplot
 from mpl_toolkits.mplot3d import Axes3D
+import os
+import sys
+import time
 
 # 3d Ising spin model
 # Spins sit at lattice sites of square lattice.
 
-N = 20  # Size of grid is NxNxN (N^3 total spins)
-T = 4.3   # Temperature
-K = 15   # Iterate until K * (N^3) spins have been flipped in total
+N = 15  # Size of grid is NxNxN (N^3 total spins)
+
+# T = 3.5   # Temperature
+T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
+
+K = 20   # Iterate until K * (N^3) spins have been flipped in total
 
 choices = [-1, 1]   # Values to choose from to initialize grid
+
+display = True    # Display final spin configuration
+save = False    # Save final spin configuration to file
+progress = True     # Print progress during flips
 
 
 # Returns randomized grid
@@ -51,14 +61,27 @@ def update(g):
     return cluster
 
 
+def energy(g):
+    nrg = 0
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                nrg -= g[x, y, z] * g[(x + 1) % N, y, z]
+                nrg -= g[x, y, z] * g[x, (y + 1) % N, z]
+                nrg -= g[x, y, z] * g[x, y, (z + 1) % N]
+    return nrg / (N ** 3)
+
+
 # Initialize grid of spins
 grid = randomGrid()
 
 # Keep track of average magnitization as a diagnostic
 # for reaching thermal equilibrium
 m = [np.average(grid)]
+e = [energy(grid)]
 
 flips = 0
+
 
 while flips < K * N ** 3:
     print("%4.1f" % (100 * flips / (K * N ** 3)), "%")
@@ -66,18 +89,44 @@ while flips < K * N ** 3:
     for c in clust:
         grid[c[0], c[1], c[2]] *= -1
     m = np.append(m, abs(np.average(grid)))
+    e = np.append(e, abs(energy(grid)))
     flips += len(clust)
 
-maj = np.average(grid)
-toPlot = np.empty([0, 3])
-for x in range(N):
-    for y in range(N):
-        for z in range(N):
-            if maj * grid[x, y, z] < 0:
-                toPlot = np.append(toPlot, [[x, y, z]], axis=0)
 
-pyplot.plot(m)
-fig = pyplot.figure()
-ax3d = fig.add_subplot(111, projection='3d')
-ax3d.scatter(toPlot[:, 0], toPlot[:, 1], toPlot[:, 2], s=1, c='k')
-pyplot.show()
+if display or save:
+    maj = np.average(grid)
+    majSpins = np.empty([0, 3])
+    for x in range(N):
+        for y in range(N):
+            for z in range(N):
+                if grid[x, y, z] * maj > 0:
+                    majSpins = np.append(majSpins, [[x, y, z]], axis=0)
+
+if save:
+    # Scan through the final spin configuration and save the locations
+    # of those spins which are (anti-)aligned with the majority
+
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    pathN = os.path.join(fileDir, 'Data_3d_Ising_Wolff_N=%s_K=%s' % (N, K))
+    pathNT = os.path.join(fileDir, 'Data_3d_Ising_Wolff_N=%s_K=%s/%s' % (N, K, T))
+    filename = os.path.join(fileDir, 'Data_3d_Ising_Wolff_N=%s_K=%s/%s/%s.txt'
+                            % (N, K, T, int(time.time())))
+
+    # Create folders if necessary
+    if not os.path.exists(pathN):
+        os.makedirs(pathN)
+    if not os.path.exists(pathNT):
+        os.makedirs(pathNT)
+
+    np.savetxt(filename, majSpins, fmt='%d')
+
+if display:
+    fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
+    axes[0].plot(abs(m))
+    axes[1].plot(e)
+    pyplot.show()
+
+    fig = pyplot.figure()
+    ax3d = fig.add_subplot(111, projection='3d')
+    ax3d.scatter(majSpins[:, 0], majSpins[:, 1], majSpins[:, 2], marker='.', s=0.1, c='k')
+    pyplot.show()

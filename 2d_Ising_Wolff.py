@@ -10,16 +10,16 @@ import time
 
 N = 50  # Size of grid is NxN (N^2 total spins)
 
-# T = 2.2   # Temperature
+# T = 1.5   # Temperature
 T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
 K = 20   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = False    # Display final spin configuration
-save = True    # Save final spin configuration to file
-progress = False     # Print progress during flips
+display = True    # Display final spin configuration
+save = False    # Save final spin configuration to file
+progress = True     # Print progress during flips
 
 
 # Builds a cluster in a flood-fill-like way and returns list of spin locations.
@@ -58,12 +58,22 @@ def update(g):
     return cluster
 
 
+def energy(g):
+    nrg = 0
+    for x in range(N):
+        for y in range(N):
+            nrg -= g[x, y] * g[(x + 1) % N, y]
+            nrg -= g[x, y] * g[x, (y + 1) % N]
+    return nrg / (N ** 2)
+
+
 # Initialize grid of spins
 grid = np.random.choice(choices, [N, N])
 
 # Keep track of average magnitization as a diagnostic
 # for reaching thermal equilibrium
 m = [np.average(grid)]
+e = [energy(grid)]
 
 flips = 0
 
@@ -77,24 +87,27 @@ while flips < K * N * N:
         grid[c[0], c[1]] *= -1
 
     m = np.append(m, np.average(grid))
+    e = np.append(e, energy(grid))
     flips += len(clust)
 
+
+if display or save:
+    maj = m[-1]
+    majSpins = np.empty([0, 2])
+    for x in range(N):
+        for y in range(N):
+            if grid[x, y] * maj > 0:
+                majSpins = np.append(majSpins, [[x, y]], axis=0)
 
 if save:
     # Scan through the final spin configuration and save the locations
     # of those spins which are (anti-)aligned with the majority
-    maj = m[-1]
-    toSave = np.empty([0, 2])
-    for x in range(N):
-        for y in range(N):
-            if grid[x, y] * maj > 0:
-                toSave = np.append(toSave, [[x, y]], axis=0)
 
     fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s' % N)
-    pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s/%s' % (N, T))
-    filename = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s/%s/%s.txt'
-                            % (N, T, int(time.time())))
+    pathN = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s_K=%s' % (N, K))
+    pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s_K=%s/%s' % (N, K, T))
+    filename = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s_K=%s/%s/%s.txt'
+                            % (N, K, T, int(time.time())))
 
     # Create folders if necessary
     if not os.path.exists(pathN):
@@ -102,12 +115,16 @@ if save:
     if not os.path.exists(pathNT):
         os.makedirs(pathNT)
 
-    np.savetxt(filename, toSave, fmt='%d')
+    np.savetxt(filename, majSpins, fmt='%d')
 
 
 if display:
     fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
-    axes[0].scatter(range(0, len(m)), abs(m), marker='.', c='k', alpha=0.15)
-    axes[1].matshow(grid)
-    axes[1].axis('off')
+    axes[0].plot(abs(m))
+    axes[1].plot(e)
+    pyplot.show()
+
+    pyplot.figure(figsize=(5, 5))
+    pyplot.scatter(majSpins[:, 0], majSpins[:, 1], marker='.', s=10, c='k')
+    pyplot.axis('off')
     pyplot.show()

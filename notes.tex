@@ -4,6 +4,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{physics}
+\usepackage{graphicx}
 
 \usepackage{hyperref}
 
@@ -74,6 +75,69 @@ for $L$ the length of the path $C$ and $A$ the minimum number of plaquettes need
 found by comparing the partition functions of the two models after having chosen a convenient gauge. One can, however, still hope to distinguish between high and low temperature spin configurations, as correlation lengths do change with temperature.
 
 For $d>2$ we can hope to do more: not only identify high and low temperature configuration but also determine the critical temperature at which one shifts from a perimeter to area law. All of this occurs without the obvious spontaneous magnitization that is present in the 2d Ising model. (We will see if...) TDA techniques are powerful enough to pick up on this distinction in the topolocial ordering of the states.
+
+\subsection{Ising Model}
+Spins sit at vertices of cubical lattice.
+\begin{equation}
+    H = -\sum_{\langle i,j\rangle}s_is_j
+\end{equation}
+Sum is over all pairs of adjacent spins.
+
+Energy per spin should be $-d$ at $T=0$ and 0 at $T=\infty$.
+
+\begin{itemize}
+    \item 2d: Phase transition at $T_\text{c}\approx 2.269$ from ordered to disordered.
+    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]).
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{ising_T=150.png}
+    \includegraphics[width=0.3\textwidth]{ising_T=inf.png}
+    \caption{Example configurations for Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
+\end{figure}
+
+\subsection{Square Ice Model}
+Spins sit on edges of cubical lattice.
+\begin{equation}
+    H = \sum_v\Big(\sum_{i\in v}s_i\Big)^2
+\end{equation}
+$v$ are the vertices and $i\in v$ is a sum over spins on edges connected to that vertex.
+
+Energy per spin should be 0 at $T=0$ and 2 at $T=\infty$.
+
+\begin{itemize}
+    \item 2d \& 3d: Based on $\ev{E}$, phase transitions somewhere around $T=1\to2$.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{squareice_T=0.png}
+    \includegraphics[width=0.3\textwidth]{squareice_T=inf.png}
+    \caption{Example configurations for square ice model at $T=0$ (left) and $T=\infty$ (right).}
+\end{figure}
+
+
+\subsection{$\mathbb{Z}_2$-gauge Ising Model}
+Spins sit on edges of cubical lattice.
+\begin{equation}
+    H = -\sum_p\prod_{i\in p}s_i
+\end{equation}
+$p$ are the ``plaquettes'' and $i\in p$ is a product over spins around the face.
+
+Energy per spin should be $\frac{1-d}{2}$ at $T=0$ ($dN^d$ spins and $\binom{d}{2}N^d$ plaquettes) and 0 at $T=\infty$.
+
+\begin{itemize}
+    \item 2d: No phase transition. Can still hope to classify $T=0$ vs $T=\infty$.
+    \item 3d: No spontaneous magnetization. Phase transition at $T_\text{c}\approx??$ from perimeter- to area-law correlation functions. (Couldn't find value in lit... judging from $\ev{E}$ seems to be around 1.)
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{gauged_T=0.png}
+    \includegraphics[width=0.3\textwidth]{gauged_T=inf.png}
+    \caption{Example configurations for gauged Ising model at $T=0$ (left) and $T=\infty$ (right).}
+\end{figure}
 
 
 \section{Results}
