@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as pyplot
+#import matplotlib.pyplot as pyplot
 import os
 import sys
 import time
@@ -101,45 +101,45 @@ def majSpinPosn(g):
 
     return majPosn
 
+for i in np.arange(1000):
+    # Initialize grid of spins
+    grid = randomGrid()
 
-# Initialize grid of spins
-grid = randomGrid()
+    # Keep track of average magnitization as a diagnostic
+    # for reaching thermal equilibrium
+    m = [np.average(grid)]
+    e = [energy(grid)]
 
-# Keep track of average magnitization as a diagnostic
-# for reaching thermal equilibrium
-m = [np.average(grid)]
-e = [energy(grid)]
-
-# Wash the grid K times
-for k in range(K):
-    if progress:
-        print("%4.1f" % (100 * k / K), "%")
-    grid = wash(grid)
-    m = np.append(m, np.average(grid))
-    e = np.append(e, energy(grid))
-
-
-if save:
-    # Scan through the final spin configuration and save the locations
-    # of those spins which are (anti-)aligned with the majority
-    toSave = majSpinPosn(grid)
-
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
-    pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
-    filename = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
-                            % (N, K, T, int(time.time())))
-
-    # Create folders if necessary
-    if not os.path.exists(pathN):
-        os.makedirs(pathN)
-    if not os.path.exists(pathNT):
-        os.makedirs(pathNT)
-
-    np.savetxt(filename, toSave, fmt='%.1f')
+    # Wash the grid K times
+    for k in range(K):
+        if progress:
+            print("%4.1f" % (100 * k / K), "%")
+        grid = wash(grid)
+        m = np.append(m, np.average(grid))
+        e = np.append(e, energy(grid))
 
 
-if display:
+    if save:
+        # Scan through the final spin configuration and save the locations
+        # of those spins which are (anti-)aligned with the majority
+        toSave = majSpinPosn(grid)
+
+        fileDir = os.path.dirname(os.path.realpath('__file__'))
+        pathN = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
+        pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
+        filename = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
+                                % (N, K, T, int(time.time())))
+
+        # Create folders if necessary
+        if not os.path.exists(pathN):
+            os.makedirs(pathN)
+        if not os.path.exists(pathNT):
+            os.makedirs(pathNT)
+
+        np.savetxt(filename, toSave, fmt='%.1f')
+
+
+'''if display:
     # Plot the magnitization as a function of number of washes,
     # and display the final spin configuration
     majPosn = majSpinPosn(grid)
@@ -152,4 +152,4 @@ if display:
     pyplot.figure(figsize=(5, 5))
     pyplot.scatter(majPosn[:, 0], majPosn[:, 1], marker='.', s=10, c='k')
     pyplot.axis('off')
-    pyplot.show()
+    pyplot.show()'''

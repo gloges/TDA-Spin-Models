@@ -1,6 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as pyplot
-from mpl_toolkits.mplot3d import Axes3D
+#import matplotlib.pyplot as pyplot
+#from mpl_toolkits.mplot3d import Axes3D
 import os
 import sys
 import time
@@ -110,55 +110,55 @@ def wash(g):
         gNew[x, y, z, a] *= flipSpinB(gNew, x, y, z, a)
     return gNew
 
+for i in np.arange(1000):
+    # Initialize grid of spins
+    grid = randomGrid()
 
-# Initialize grid of spins
-grid = randomGrid()
+    # Keep track of average magnitization as a diagnostic
+    # for reaching thermal equilibrium
+    m = [np.average(grid)]
+    e = [energy(grid)]
 
-# Keep track of average magnitization as a diagnostic
-# for reaching thermal equilibrium
-m = [np.average(grid)]
-e = [energy(grid)]
+    # Wash the grid K times
+    for k in range(K):
+        if progress:
+            print("%4.1f" % (100 * k / K), "%")
+        grid = wash(grid)
+        m = np.append(m, np.average(grid))
+        e = np.append(e, energy(grid))
 
-# Wash the grid K times
-for k in range(K):
-    if progress:
-        print("%4.1f" % (100 * k / K), "%")
-    grid = wash(grid)
-    m = np.append(m, np.average(grid))
-    e = np.append(e, energy(grid))
+    if save or display:
+        maj = m[-1]
+        majLoc = np.empty([0, 3])
+        for x in range(N):
+            for y in range(N):
+                for z in range(N):
+                    if grid[x, y, z, 0] * maj > 0:
+                        majLoc = np.append(majLoc, [[x + 0.5, y, z]], axis=0)
+                    if grid[x, y, z, 1] * maj > 0:
+                        majLoc = np.append(majLoc, [[x, y + 0.5, z]], axis=0)
+                    if grid[x, y, z, 2] * maj > 0:
+                        majLoc = np.append(majLoc, [[x, y, z + 0.5]], axis=0)
 
-if save or display:
-    maj = m[-1]
-    majLoc = np.empty([0, 3])
-    for x in range(N):
-        for y in range(N):
-            for z in range(N):
-                if grid[x, y, z, 0] * maj > 0:
-                    majLoc = np.append(majLoc, [[x + 0.5, y, z]], axis=0)
-                if grid[x, y, z, 1] * maj > 0:
-                    majLoc = np.append(majLoc, [[x, y + 0.5, z]], axis=0)
-                if grid[x, y, z, 2] * maj > 0:
-                    majLoc = np.append(majLoc, [[x, y, z + 0.5]], axis=0)
+    if save:
+        # Scan through the final spin configuration and save the locations
+        # of those spins which are (anti-)aligned with the majority
+        fileDir = os.path.dirname(os.path.realpath('__file__'))
+        pathN = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
+        pathNT = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
+        filename = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
+                                % (N, K, T, int(time.time())))
 
-if save:
-    # Scan through the final spin configuration and save the locations
-    # of those spins which are (anti-)aligned with the majority
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
-    pathN = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s' % (N, K))
-    pathNT = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s' % (N, K, T))
-    filename = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s_K=%s/%s/%s.txt'
-                            % (N, K, T, int(time.time())))
+        # Create folders if necessary
+        if not os.path.exists(pathN):
+            os.makedirs(pathN)
+        if not os.path.exists(pathNT):
+            os.makedirs(pathNT)
 
-    # Create folders if necessary
-    if not os.path.exists(pathN):
-        os.makedirs(pathN)
-    if not os.path.exists(pathNT):
-        os.makedirs(pathNT)
-
-    np.savetxt(filename, majLoc, fmt='%.1f')
+        np.savetxt(filename, majLoc, fmt='%.1f')
 
 
-if display:
+'''if display:
     fig = pyplot.figure(figsize=(15, 5))
     ax0 = fig.add_subplot(1, 3, 1)
     ax0.plot(m)
@@ -166,4 +166,4 @@ if display:
     ax1.plot(e)
     ax2 = fig.add_subplot(1, 3, 3, projection='3d')
     ax2.scatter(majLoc[:, 0], majLoc[:, 1], majLoc[:, 2], s=1, c='k')
-    pyplot.show()
+    pyplot.show()'''
