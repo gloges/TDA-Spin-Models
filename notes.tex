@@ -155,9 +155,9 @@ $p$ are the ``plaquettes'' and $i\in p$ is a product over the four spins around 
 
 
 \subsection{2d Classical Ising Model}
-Used Wolff cluster algorithm to sample configurations weighted by Boltzmann factor. For each temperature in $\{1.00,1.05,1.10,\ldots,3.50\}$ 500 simulations were run, each washing the grid until each spin is flipped an average of 20 times.
+Used Wolff cluster algorithm to sample configurations weighted by Boltzmann factor. For each temperature in $\{1.00,1.05,1.10,\ldots,3.50\}$ 500 simulations were run, washing the grid until each spin is flipped an average of 20 times.
 
-The persistence images are characterized by a large number of short-lived 1-cycles which are born very early. The logistic regression uses the number of these cycles to classify configurations into two phases (roughly it counts the number of tiny islands of minority spins).
+The logistic regression uses the number of short-lived cycles which are born early to classify configurations into two phases (roughly it counts the number of tiny islands of minority spins).
 
 \begin{figure}[h]
     \centering
@@ -165,6 +165,15 @@ The persistence images are characterized by a large number of short-lived 1-cycl
     \includegraphics[width=0.32\textwidth]{logreg_acc_2d_ising}
     \includegraphics[width=0.32\textwidth]{logreg_avg_2d_ising}
     \caption{Left: coefficients for logreg. Center: accuracy on testing data. Right: average classification on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
+\end{figure}
+
+(Unsupervised!) $k$-means clustering separates persistence images into two clusters.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.32\textwidth]{kmeans_avg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{pca_2d_ising}
+    \caption{Left: average cluster number on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$. Right: PCA on persistence images, showing clear distinction between phases.}
 \end{figure}
 
 \subsection{2d Square-ice Model}
