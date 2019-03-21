@@ -44,7 +44,14 @@ The persistence diagram contains information about the size of features in the d
 \begin{align}
     \rho(x,y) &= \sum_i w(b_i,p_i)\;\frac{1}{2\pi\sigma^2}\exp\left[-\frac{(x-b_i)^2+(y-p_i)^2}{2\sigma^2}\right]
 \end{align}
-The weighting function should be chosen so that $w(b_i,0)=0$; this ensures that the sudden appearence of a cycle is accounted for smoothly (choice here?). The persistence image is then the vector obtained by integrating $\rho$ over a series of ``pixels'' (bins):
+The weighting function should be chosen so that $w(b_i,0)=0$; this ensures that the sudden appearence of a cycle is accounted for smoothly. For simplicity, we choose $w(b_i,p_i)=p_i$. Because of the lattice structure for these spin models the set of possible $(b_i,p_i)$ pairs is discrete, and we find it convenient to compute $\rho$ as
+\begin{align}
+    \rho(x,y) &= \sum_{(b,p)}N_{b,p}\times w(b,p)\;\frac{1}{2\pi\sigma^2}\exp\left[-\frac{(x-b)^2+(y-p)^2}{2\sigma^2}\right]
+\end{align}
+for $N_{b,p}$ the frequency of the $(b,p)$ pair. As for choosing $\sigma$, we have a natural length-scale which is the lattice size. Can compare varying choice of $\sigma$.
+
+
+The persistence image is then the vector obtained by integrating $\rho$ over a series of ``pixels'' (bins):
 \begin{align}
     I_\text{p} &= \iint\limits_\text{p}\rho(x,y)\,\d{x}\d{y}
 \end{align}
@@ -52,26 +59,22 @@ This process can be done for $H_0,H_1,\ldots$ and the respective vectors adjoine
 
 \begin{figure}[b]
     \centering
-    % \includegraphics[]{}
+    \includegraphics[width=0.3\textwidth]{pd_example}
+    \includegraphics[width=0.3\textwidth]{rho_example}
+    \includegraphics[width=0.3\textwidth]{pi_example}
     \caption{Example PD$\rightarrow\rho\rightarrow$PI process.}
 \end{figure}
 
 
 
 \section{Spin Models}
-Here we will apply the techniques of TDA to lattice spin systems. The traditional Ising model is rich in behaviour, despite being simple to describe; in two or more dimensions there is a second-order phase transition from an ordered to random state. While it is relatively easy to distinguish between these states simply by looking at the spin configurations, there exists systems in which the different states are not as readily identified. It has been demonstrated that one can use machine learning to identify phases of matter for such spin systems. We will show that this classification can also be done using persistance images built from the spin configurations, where physical characteristics of the data such as sizes of features play a central role.
+Here we will apply the techniques of TDA to lattice spin systems. The traditional Ising model is rich in behaviour, despite being simple to describe; in two or more dimensions there is a second-order phase transition from an ordered to random state. While it is relatively easy to distinguish between these states simply by looking at the spin configurations, there exist systems in which the different states are not as readily identified. It has been demonstrated that one can use machine learning to identify phases of matter for such spin systems. We will show that this classification can also be done using persistance images built from the spin configurations, where physical characteristics of the data such as sizes of features play a central role.
 
 As a starting point we begin with the 2d Ising model on a square lattice:
 \begin{equation}
     H = -\sum_{\langle ij\rangle}s_is_j + h\sum_is_i
 \end{equation}
 where the sum is over all pairs of adjacent spins. Each $s_i$ takes values in $\{-1,1\}$. We will be interested in the case of no external magnetic field, $h=0$.
-
-\begin{figure}[t]
-    \centering
-    % \includegraphics[]{}
-    \caption{Example spin configurations above and below phase transition.}
-\end{figure}
 
 We take as data the physical locations of spins which all point in the same direction as the majority of spins after reaching equilibrium with a thermal bath. At very low temperatures when nearly all spins are aligned cycles are born and die very quickly, while at high temperatures features in the spins may be longer-lived.
 
@@ -101,13 +104,13 @@ Spins are located at the vertices of the lattice $\mathbb{Z}^d$ and the Hamilton
 where $\langle i,j\rangle$ denotes all pairs of adjacent spins. The energy per spin is $-d$ at $T=0$ and 0 at $T=\infty$.
 \begin{itemize}
     \item 2d: Phase transition at $T_\text{c}\approx 2.269$ from ordered to disordered. Exponential spin-spin correlation functions except for power-law at the critical point.
-    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]). Exponential spin-spin correlationi functions except for power-law at the critical point.
+    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]). Exponential spin-spin correlation functions except for power-law at the critical point.
 \end{itemize}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{ising_T=150.png}
-    \includegraphics[width=0.3\textwidth]{ising_T=inf.png}
+    \includegraphics[width=0.3\textwidth]{ising_images/ising_T=150.png}
+    \includegraphics[width=0.3\textwidth]{ising_images/ising_T=inf.png}
     \caption{Example configurations for 2d Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
 \end{figure}
 
@@ -122,8 +125,8 @@ $v\in\mathbb{Z}^d$ are the vertices and $i\in v$ is a sum over spins on edges co
 \end{itemize}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{squareice_T=0.png}
-    \includegraphics[width=0.3\textwidth]{squareice_T=inf.png}
+    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=0.png}
+    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=inf.png}
     \caption{Example configurations for square ice model at $T=0$ (left) and $T=\infty$ (right).}
 \end{figure}
 
@@ -140,8 +143,8 @@ $p$ are the ``plaquettes'' and $i\in p$ is a product over the four spins around 
 \end{itemize}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{gauged_T=0.png}
-    \includegraphics[width=0.3\textwidth]{gauged_T=inf.png}
+    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=0.png}
+    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=inf.png}
     \caption{Example configurations for gauged Ising model at $T=0$ (left) and $T=\infty$ (right).}
 \end{figure}
 
@@ -161,9 +164,9 @@ The logistic regression uses the number of short-lived cycles which are born ear
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.32\textwidth]{logreg_2d_ising}
-    \includegraphics[width=0.32\textwidth]{logreg_acc_2d_ising}
-    \includegraphics[width=0.32\textwidth]{logreg_avg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{ising_images/logreg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{ising_images/logreg_acc_2d_ising}
+    \includegraphics[width=0.32\textwidth]{ising_images/logreg_avg_2d_ising}
     \caption{Left: coefficients for logreg. Center: accuracy on testing data. Right: average classification on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
 \end{figure}
 
@@ -171,8 +174,8 @@ The logistic regression uses the number of short-lived cycles which are born ear
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.32\textwidth]{kmeans_avg_2d_ising}
-    \includegraphics[width=0.32\textwidth]{pca_2d_ising}
+    \includegraphics[width=0.32\textwidth]{ising_images/kmeans_avg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{ising_images/pca_2d_ising}
     \caption{Left: average cluster number on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$. Right: PCA on persistence images, showing clear distinction between phases.}
 \end{figure}
 
@@ -180,7 +183,6 @@ Can repeat all of the above on $H_0$ persistence images, giving similar results.
 
 \subsection{2d Square-ice Model}
 
-\section{Discussion}
 
 
 \end{document}
