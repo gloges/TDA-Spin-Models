@@ -18,6 +18,22 @@
 \section{Introduction}
 
 
+\begin{itemize}
+    \item 1605.01735, \textit{Machine Learning Phases of Matter}, Carrasquilla \& Melko: Used supervised learning with neural-network to classify raw spin configurations into two phases for classical Ising model, square-ice model and gauged Ising model. The trained network for the square-lattice classical Ising model correctly identifies the critical temperature for triangular-lattice classical Ising model without ``information about the Hamiltonian, the lattice structure, or even the general locality of interactions". For the square-ice and gauged Ising models where there is no conventional order parameter, the are able to distinguish between the ground and high-temperature states.
+    \item 1606.00318, \textit{Discovering Phase Transitions with Machine Learning}, Lei Wang: Used the unsupervised methods of PCA and clustering to identify phase transitions and order parameters using raw spin configurations in classical Ising model and COP Ising model ($\sum\sigma=0$).
+    \item 1609.02552, \textit{Machine Learning Phases of Strongly Correlated Fermions}, Ch'ng et.al.: Used neural-network to identify phases in 3d Hubbard model of fermions on cubical lattice.
+    \item 1610.02048, \textit{Learning Phases of Matter by Confusion}, van Nieuwenburg et.al.: Unsupervised methods of PCA and clustering on the entanglement spectrum or Kitaev model clearly identifies different topological phases. Supervised learning with neural-network identifies phases as well, even when omitting a region around the phase-transition point. Their ``confusion scheme" systematically trains on data incorrectly labelled according to a tunable parameter. Asking when the accuracy of the trained network is highest on the entire data set narrows in on the ``correct" value of the parameter and thus the location of the phase transition. This scheme is applied to the classical Ising model in 2d and the random-field Heisenberg chain.
+    \item 1703.02435, \textit{Unsupervised learning of phase transitions: from principal component analysis to variational autoencoders}, Wetzel: Used unsupervised methods of PCA and variational autoencoder on 2d classical Ising model and 3d XY model.
+    \item 1704.00080, \textit{Discovering Phases, Phase Transitions and Crossovers through Unsupervised Machine Learning: A critical examination}, Hu et.al.: Used PCA and autoencoders to identify phase transitions in square and triangular Ising models, biquadratic-exchange spin-one Ising model (highly degenerate). Blume-Capel model (both first- and second-order transitions) and 2d XY model.
+\end{itemize}
+
+Some methods:
+\begin{itemize}
+    \item PCA: dimensionally reduce data to hyperplane where variance is largest (principal axes).
+    \item Autoencoder: ``dimensional reduction" idea applied to neural-networks. Have a hidden layer with very few nodes and train the network to reconstruct data similar to input data based just on that hidden layer (put a bottle-neck in neural network).
+\end{itemize}
+
+
 \section{TDA}
 For any discrete data set, persistent homology entails a sequence of simplicial complexes ($\alpha$, Vietoris-Rips, \&c.) of varying granularity in which homological cycles first appear and then disappear. The choice in filtration corresponds to different ways to add edges and faces to the simplicial complex as some parameter is varied. This process produces a collection of persistence data consisting of births and deaths, $\{b_i,d_i\}$, for each of the cycles. Persistence diagrams are a way to visualize these topolgically derived data.
 
@@ -36,7 +52,7 @@ This process can be done for $H_0,H_1,\ldots$ and the respective vectors adjoine
 
 \begin{figure}[b]
     \centering
-    \includegraphics[]{}
+    % \includegraphics[]{}
     \caption{Example PD$\rightarrow\rho\rightarrow$PI process.}
 \end{figure}
 
@@ -47,13 +63,13 @@ Here we will apply the techniques of TDA to lattice spin systems. The traditiona
 
 As a starting point we begin with the 2d Ising model on a square lattice:
 \begin{equation}
-    \beta H = \sum_{\langle ij\rangle}s_is_j + h\sum_is_i
+    H = -\sum_{\langle ij\rangle}s_is_j + h\sum_is_i
 \end{equation}
-where the sum is over all pairs of adjacent spins (check normalization). Each $s_i$ takes values in $\{-1,1\}$. We will be interested in the case of no external magnetic field, $h=0$.
+where the sum is over all pairs of adjacent spins. Each $s_i$ takes values in $\{-1,1\}$. We will be interested in the case of no external magnetic field, $h=0$.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[]{}
+    % \includegraphics[]{}
     \caption{Example spin configurations above and below phase transition.}
 \end{figure}
 
@@ -76,40 +92,34 @@ found by comparing the partition functions of the two models after having chosen
 
 For $d>2$ we can hope to do more: not only identify high and low temperature configuration but also determine the critical temperature at which one shifts from a perimeter to area law. All of this occurs without the obvious spontaneous magnitization that is present in the 2d Ising model. (We will see if...) TDA techniques are powerful enough to pick up on this distinction in the topolocial ordering of the states.
 
-\subsection{Ising Model}
-Spins sit at vertices of cubical lattice.
+\section{Models}
+\subsection{Classical Ising Model}
+Spins are located at the vertices of the lattice $\mathbb{Z}^d$ and the Hamiltonian is
 \begin{equation}
     H = -\sum_{\langle i,j\rangle}s_is_j
 \end{equation}
-Sum is over all pairs of adjacent spins.
-
-Energy per spin should be $-d$ at $T=0$ and 0 at $T=\infty$.
-
+where $\langle i,j\rangle$ denotes all pairs of adjacent spins. The energy per spin is $-d$ at $T=0$ and 0 at $T=\infty$.
 \begin{itemize}
-    \item 2d: Phase transition at $T_\text{c}\approx 2.269$ from ordered to disordered.
-    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]).
+    \item 2d: Phase transition at $T_\text{c}\approx 2.269$ from ordered to disordered. Exponential spin-spin correlation functions except for power-law at the critical point.
+    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]). Exponential spin-spin correlationi functions except for power-law at the critical point.
 \end{itemize}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{ising_T=150.png}
     \includegraphics[width=0.3\textwidth]{ising_T=inf.png}
-    \caption{Example configurations for Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
+    \caption{Example configurations for 2d Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
 \end{figure}
 
 \subsection{Square Ice Model}
-Spins sit on edges of cubical lattice.
+Spins are located on the edges of the cubical lattice $\mathbb{Z}^d$ and the Hamiltonian is
 \begin{equation}
     H = \sum_v\Big(\sum_{i\in v}s_i\Big)^2
 \end{equation}
-$v$ are the vertices and $i\in v$ is a sum over spins on edges connected to that vertex.
-
-Energy per spin should be 0 at $T=0$ and 2 at $T=\infty$.
-
+$v\in\mathbb{Z}^d$ are the vertices and $i\in v$ is a sum over spins on edges connected to that vertex. The energy per spin is 0 at $T=0$ and 2 at $T=\infty$.
 \begin{itemize}
-    \item 2d \& 3d: Based on $\ev{E}$, phase transitions somewhere around $T=1\to2$.
+    \item 2d \& 3d: Based on $\ev{E}$, phase transitions somewhere around $T=1\to2$. (Find in lit?)
 \end{itemize}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{squareice_T=0.png}
@@ -119,19 +129,15 @@ Energy per spin should be 0 at $T=0$ and 2 at $T=\infty$.
 
 
 \subsection{$\mathbb{Z}_2$-gauge Ising Model}
-Spins sit on edges of cubical lattice.
+Spins are located on the edges of the cubical lattice $\mathbb{Z}^d$ and the Hamiltonian is
 \begin{equation}
     H = -\sum_p\prod_{i\in p}s_i
 \end{equation}
-$p$ are the ``plaquettes'' and $i\in p$ is a product over spins around the face.
-
-Energy per spin should be $\frac{1-d}{2}$ at $T=0$ ($dN^d$ spins and $\binom{d}{2}N^d$ plaquettes) and 0 at $T=\infty$.
-
+$p$ are the ``plaquettes'' and $i\in p$ is a product over the four spins around the edges of the face. The energy per spin is $\frac{1-d}{2}$ at $T=0$ ($dN^d$ spins and $\binom{d}{2}N^d$ plaquettes) and 0 at $T=\infty$.
 \begin{itemize}
     \item 2d: No phase transition. Can still hope to classify $T=0$ vs $T=\infty$.
-    \item 3d: No spontaneous magnetization. Phase transition at $T_\text{c}\approx??$ from perimeter- to area-law correlation functions. (Couldn't find value in lit... judging from $\ev{E}$ seems to be around 1.)
+    \item 3d: No spontaneous magnetization. Phase transition at $T_\text{c}\approx??$ from perimeter- to area-law correlation functions. (Couldn't find value of $T_\text{c}$ in lit... judging from $\ev{E}$ seems to be around 1.)
 \end{itemize}
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{gauged_T=0.png}
@@ -141,17 +147,38 @@ Energy per spin should be $\frac{1-d}{2}$ at $T=0$ ($dN^d$ spins and $\binom{d}{
 
 
 \section{Results}
-\begin{itemize}
-    \item Choices in data collections
-    \item Classification with different methods (logreg, kmeans, PCA, \&c.)
-    \item Estimation of critical temperature from unsupervised learning methods
-\end{itemize}
+(TO DO:) Apply logreg trained on square-lattice Ising model to triangular-lattice Ising model (critical temperature is known).
 
-2d Ising: Wolff cluster algorithm, average of $20$ flips per spin, $T\in\{1.00,1.05,1.10,\ldots,3.50\}$, 500 at each temperature.
-
+(TO DO:) For $k$-means classification, determine best value of $k$ (should be two!). Perhaps can show that for those models without a phase transition (e.g.~2d gauged Ising model) that $k=1$ is appropriate?
 
 (TO DO:) Near $T_\text{c}$ we expect the characteristic scale-invariance of critical phenomena to be evident in the persistance diagrams/images. By considering temperatures close to $T_\text{c}$ we hope to find signatures of the diverging correlation length in the derived topological data.
 
+
+\subsection{2d Classical Ising Model}
+Used Wolff cluster algorithm to sample configurations weighted by Boltzmann factor. For each temperature in $\{1.00,1.05,1.10,\ldots,3.50\}$ 500 simulations were run, washing the grid until each spin is flipped an average of 20 times.
+
+The logistic regression uses the number of short-lived cycles which are born early to classify configurations into two phases (roughly it counts the number of tiny islands of minority spins).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.32\textwidth]{logreg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{logreg_acc_2d_ising}
+    \includegraphics[width=0.32\textwidth]{logreg_avg_2d_ising}
+    \caption{Left: coefficients for logreg. Center: accuracy on testing data. Right: average classification on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
+\end{figure}
+
+(Unsupervised!) $k$-means clustering separates $H_1$ persistence images into two clusters and gives an estimate of $T_\text{C}=2.3246$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.32\textwidth]{kmeans_avg_2d_ising}
+    \includegraphics[width=0.32\textwidth]{pca_2d_ising}
+    \caption{Left: average cluster number on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$. Right: PCA on persistence images, showing clear distinction between phases.}
+\end{figure}
+
+Can repeat all of the above on $H_0$ persistence images, giving similar results.
+
+\subsection{2d Square-ice Model}
 
 \section{Discussion}
 
