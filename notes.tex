@@ -65,123 +65,192 @@ This process can be done for $H_0,H_1,\ldots$ and the respective vectors adjoine
     \caption{Example PD$\rightarrow\rho\rightarrow$PI process.}
 \end{figure}
 
+(The above should be altered slightly for $H_0$ since in this case the persistence data are essentially one-dimensional.)
 
 
 \section{Spin Models}
 Here we will apply the techniques of TDA to lattice spin systems. The traditional Ising model is rich in behaviour, despite being simple to describe; in two or more dimensions there is a second-order phase transition from an ordered to random state. While it is relatively easy to distinguish between these states simply by looking at the spin configurations, there exist systems in which the different states are not as readily identified. It has been demonstrated that one can use machine learning to identify phases of matter for such spin systems. We will show that this classification can also be done using persistance images built from the spin configurations, where physical characteristics of the data such as sizes of features play a central role.
 
-As a starting point we begin with the 2d Ising model on a square lattice:
-\begin{equation}
-    H = -\sum_{\langle ij\rangle}s_is_j + h\sum_is_i
-\end{equation}
-where the sum is over all pairs of adjacent spins. Each $s_i$ takes values in $\{-1,1\}$. We will be interested in the case of no external magnetic field, $h=0$.
+We take as data the physical locations of spins which all point in the same direction as the majority of spins after reaching equilibrium with a thermal bath. To generate sample spin configurations, we use Monte Carlo methods, characterized by the following:
+\begin{itemize}
+    \item $N$: Linear size of periodic lattice. May not correspond to number of spins, e.g.~if spins are not on vertices but on edges.
+    \item $\{T_i\}$: Collection of temperatures used.
+    \item $N_\text{sim}$: Number of simulations at each temperature.
+    \item $K$: Measure of the number of Monte Carlo iterations, being the average number of flips per spin.
+\end{itemize}
+For each simulation we create a persistence image, which depends on the following choices:
+\begin{itemize}
+    \item $w(b,p)$: Weighting factor to emphasize longer-lived features. Stability requires $w(b,0)=0$. We choose $w(b,p)=p$ for simplicity.
+    \item $\sigma$: Size of gaussians for smoothing process. We have a natural length-scale in our set-up, which is the lattice spacing ($l=1$). Have been using $\sigma=1$, but a comparison for different $\sigma$ would be good to have.
+    \item $\{\text{p}_i\}$: Collection of pixels/bins to be integrated over to yield the persistence images. Have been using $1\times 1$ pixels.
+\end{itemize}
+After having created these persistence images we have the following methods for identifying phases and critical temperatures:
+\begin{itemize}
+    \item Logistic regression (supervised learning, identify phase): With a known critical temperature, can train on a subset of the persistence images labelled by their phase. When applied to testing data can quantify accuracy of the regression by comparing to known phase designations.
+    \item $k$-means clustering (unsupervised learning, identify phase): Train on a subset of the persistence images, learning appropriate locations for cluster ceneters. When applied to testing data of known temperature can ask what percentage are placed in one cluster or the other, with the critical temperature being where this crosses 50\%. The accuracy at each temperature can also be quantified, since the ``correct'' cluster is known.
+    \item PCA (data visualization): Project the high-dimensional persistence images onto the plane for which the variance is largest.
+\end{itemize}
 
-We take as data the physical locations of spins which all point in the same direction as the majority of spins after reaching equilibrium with a thermal bath. At very low temperatures when nearly all spins are aligned cycles are born and die very quickly, while at high temperatures features in the spins may be longer-lived.
+The models we choose are increasing non-local. We begin with the classical Ising model, which is exactly solved for $d=2$ and very well-studied for $d=3$. This is the easiest to classify into two phases based on the spontaneous magnetization below the critical temperature. Next is the square-ice (a.k.a.~16 vertex) model, which has no spontaneous magnetization but rather a transition from power-law to exponentially decaying spin-spin correlation functions. Finally, the $\mathbb{Z}_2$-gauged Ising model has a local gauge symmetry which implies no spontaneous magnetization and requiresgauge-invariant to be gauge-invariant in order that they be well-defined. By considering correlation functions aroung loops in the lattice, one finds a phase transition from ``perimeter'' to ``area'' law for $d\geq 3$: there is no phase transition for $d=2$.
 
-
-Of interest also are spin systems in which there are topological phases, such as the $\mathbb{Z}_2$-gauged Ising model (see [\textit{Gauge fields...}, Balian et.al.]). These theories enjoy a local gauge invariance which ensures that there is spontaneous magnitization at low temperatures. Rather, in dimensions $d>2$ the phase transition is signalled by a change in the spin-spin correlation function. For $C$ a closed path in the lattice, at low temperature one finds a ``perimeter law",
-\begin{equation}
-    \langle\prod_C s_i\rangle \sim e^{-h(\beta)L}
-\end{equation}
-while at high temperatures one finds an ``area law",
-\begin{equation}
-    \langle\prod_C s_i\rangle \sim e^{-f(\beta)A}
-\end{equation}
-for $L$ the length of the path $C$ and $A$ the minimum number of plaquettes needed to span $C$. The arguments which lead to these expressions do not apply in $d=2$ (see section V.D.~of [\textit{An introduction...}, Kogut]) as the radius of convergence for the validity of the perimeter law is zero. One may also understand the special case of $d=2$ as being a consequence of the equivalence
-\begin{equation}
-    \Big(\text{2d }\mathbb{Z}_2\text{-gauged Ising model}\Big) = \Big( \text{1d Ising model} \Big)
-\end{equation}
-found by comparing the partition functions of the two models after having chosen a convenient gauge. One can, however, still hope to distinguish between high and low temperature spin configurations, as correlation lengths do change with temperature.
-
-For $d>2$ we can hope to do more: not only identify high and low temperature configuration but also determine the critical temperature at which one shifts from a perimeter to area law. All of this occurs without the obvious spontaneous magnitization that is present in the 2d Ising model. (We will see if...) TDA techniques are powerful enough to pick up on this distinction in the topolocial ordering of the states.
-
-\section{Models}
 \subsection{Classical Ising Model}
-Spins are located at the vertices of the lattice $\mathbb{Z}^d$ and the Hamiltonian is
+For the classical Ising model in $d$ dimensions one uses the cubical lattice $\mathbb{Z}_N^d$ with spins located at the vertices taking values in $\{{-1},1\}$. Interactions are local, being between pairs of adjacent spins. The Hamiltonian is
 \begin{equation}
     H = -\sum_{\langle i,j\rangle}s_is_j
 \end{equation}
-where $\langle i,j\rangle$ denotes all pairs of adjacent spins. The energy per spin is $-d$ at $T=0$ and 0 at $T=\infty$.
-\begin{itemize}
-    \item 2d: Phase transition at $T_\text{c}\approx 2.269$ from ordered to disordered. Exponential spin-spin correlation functions except for power-law at the critical point.
-    \item 3d: Phase transition at $T_\text{c}\approx 4.512$ from ordered to disordered. Finite $N$: $T_\text{c}^{-1}\approx 0.2212-\frac{2.4454}{N}$ (see [0406135]). Exponential spin-spin correlation functions except for power-law at the critical point.
-\end{itemize}
+where $\langle i,j\rangle$ denotes all nearest-neighbor pairs. We work with a finite lattice of $N^d$ spins and periodic boundary conditions. At $T=0$ the energy per spin is $-d$ and at $T=\infty$ the energy per spin is zero.
+
+The Ising model has a second-order phase transition for all $d\geq 2$, characterized by a spontaneous magnetization at low temperatures. In the thermodynamic limit, $N\to\infty$, the critical temperatures in 2d and 3d are $T_\text{c}\approx 2.269$ and $T_\text{c}\approx4.512$, respectively. With finite $N$ we expect the critical temperatures to be shifted slightly to larger values.
+
+Away from the critical point spin-spin correlation functions decay exponentially, but at the critical point they follow a power-law ($\ev{s_0s_r}\sim r^{-1/4}$ in 2d and $\ev{s_0s_r}\sim r^{-1.036}$ in 3d), i.e.~the correlation length diverges. TO DO: can these critical exponents be extracted from the persitence diagrams/images?
+
+To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use the Wolff cluster algorithm with the following parameters:
+\begin{align}
+    2d&\sim\left\{\begin{array}{l}
+        N = 50\\
+        \{T_i\} = \{1.00,1.05,\ldots,3.50\}\\
+        N_\text{sim} \approx 1400 (?)\\
+        K = 20
+    \end{array}\right. & 3d&\sim\left\{\begin{array}{l}
+        N = 15\\
+        \{T_i\} = \{3.00,3.05,\ldots,6.00\}\\
+        N_\text{sim} = 1000 (?)\\
+        K = 20
+    \end{array}\right.
+\end{align}
+Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:IsingExampleConfigs}.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{ising_images/ising_T=150.png}
     \includegraphics[width=0.3\textwidth]{ising_images/ising_T=inf.png}
     \caption{Example configurations for 2d Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
+    \label{fig:IsingExampleConfigs}
 \end{figure}
 
-\subsection{Square Ice Model}
-Spins are located on the edges of the cubical lattice $\mathbb{Z}^d$ and the Hamiltonian is
-\begin{equation}
-    H = \sum_v\Big(\sum_{i\in v}s_i\Big)^2
-\end{equation}
-$v\in\mathbb{Z}^d$ are the vertices and $i\in v$ is a sum over spins on edges connected to that vertex. The energy per spin is 0 at $T=0$ and 2 at $T=\infty$.
-\begin{itemize}
-    \item 2d \& 3d: Based on $\ev{E}$, phase transitions somewhere around $T=1\to2$. (Find in lit?)
-\end{itemize}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=0.png}
-    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=inf.png}
-    \caption{Example configurations for square ice model at $T=0$ (left) and $T=\infty$ (right).}
-\end{figure}
-
-
-\subsection{$\mathbb{Z}_2$-gauge Ising Model}
-Spins are located on the edges of the cubical lattice $\mathbb{Z}^d$ and the Hamiltonian is
-\begin{equation}
-    H = -\sum_p\prod_{i\in p}s_i
-\end{equation}
-$p$ are the ``plaquettes'' and $i\in p$ is a product over the four spins around the edges of the face. The energy per spin is $\frac{1-d}{2}$ at $T=0$ ($dN^d$ spins and $\binom{d}{2}N^d$ plaquettes) and 0 at $T=\infty$.
-\begin{itemize}
-    \item 2d: No phase transition. Can still hope to classify $T=0$ vs $T=\infty$.
-    \item 3d: No spontaneous magnetization. Phase transition at $T_\text{c}\approx??$ from perimeter- to area-law correlation functions. (Couldn't find value of $T_\text{c}$ in lit... judging from $\ev{E}$ seems to be around 1.)
-\end{itemize}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=0.png}
-    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=inf.png}
-    \caption{Example configurations for gauged Ising model at $T=0$ (left) and $T=\infty$ (right).}
-\end{figure}
-
-
-\section{Results}
-(TO DO:) Apply logreg trained on square-lattice Ising model to triangular-lattice Ising model (critical temperature is known).
-
-(TO DO:) For $k$-means classification, determine best value of $k$ (should be two!). Perhaps can show that for those models without a phase transition (e.g.~2d gauged Ising model) that $k=1$ is appropriate?
-
-(TO DO:) Near $T_\text{c}$ we expect the characteristic scale-invariance of critical phenomena to be evident in the persistance diagrams/images. By considering temperatures close to $T_\text{c}$ we hope to find signatures of the diverging correlation length in the derived topological data.
-
-
-\subsection{2d Classical Ising Model}
-Used Wolff cluster algorithm to sample configurations weighted by Boltzmann factor. For each temperature in $\{1.00,1.05,1.10,\ldots,3.50\}$ 500 simulations were run, washing the grid until each spin is flipped an average of 20 times.
-
-The logistic regression uses the number of short-lived cycles which are born early to classify configurations into two phases (roughly it counts the number of tiny islands of minority spins).
+\subsubsection{Logistic Regression}
+For $d=2$ we label persistence images to be in the ordered phase for $T<2.269$. The logistic regression depends heavily on small, short-lived cycles to distinguish between the ordered and disordered phases (see left of figure~\ref{fig:IsingLogReg}). Accuracy is near 100\% for most temperatures, and the cross-over point occurs at $T\approx 2.2796$.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.32\textwidth]{ising_images/logreg_2d_ising}
     \includegraphics[width=0.32\textwidth]{ising_images/logreg_acc_2d_ising}
     \includegraphics[width=0.32\textwidth]{ising_images/logreg_avg_2d_ising}
-    \caption{Left: coefficients for logreg. Center: accuracy on testing data. Right: average classification on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
+    \caption{Left: absolute value of coefficients for logistic regression. Center: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
+    \label{fig:IsingLogReg}
 \end{figure}
 
-(Unsupervised!) $k$-means clustering separates $H_1$ persistence images into two clusters and gives an estimate of $T_\text{C}=2.3246$.
+There are few surprizes here - the spontaneous magnetization allows for an easy classification based on the number of small islands of minority spins. In fact one could do a logistic regression on the raw spin configurations and achieve the same result, as it can effectively reconstruct the order parameter, $m=\ev{|\sum s_i|}$.
+
+\subsubsection{$k$-Means}
+Here the clustering algorithm separates the training persistence images into two clusters. For $d=2$ the critical temperature is estimated as $T_\text{c}\approx 2.3246$ (see figure~\ref{ref:IsingKmeans}). This is within 2.5\% of the exact value of $T_\text{c}$ in the thermodynamic limit, a discrepancy which is easily attributed to finite-$N$ effects.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.32\textwidth]{ising_images/kmeans_avg_2d_ising}
-    \includegraphics[width=0.32\textwidth]{ising_images/pca_2d_ising}
-    \caption{Left: average cluster number on testing data (binned). The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$. Right: PCA on persistence images, showing clear distinction between phases.}
+    \includegraphics[width=0.3\textwidth]{ising_images/kmeans_2d_ising}
+    \includegraphics[width=0.3\textwidth]{ising_images/kmeans_avg_2d_ising}
+    \caption{Left: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$.}
+    \label{ref:IsingKmeans}
 \end{figure}
 
-Can repeat all of the above on $H_0$ persistence images, giving similar results.
+\subsubsection{PCA}
+PCA for $d=2$ leads to a clear trend in temperature (judging from other work, diagram would be symmetric if we chose majority/minority spins randomly).
 
-\subsection{2d Square-ice Model}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{ising_images/pca_2d_ising}
+    \includegraphics[width=0.3\textwidth]{ising_images/pca_phase_2d_ising}
+    \includegraphics[width=0.3\textwidth]{ising_images/pca_phase2_2d_ising}
+    \caption{Left: PCA colored by temperate. Center: PCA colored by phase, taking $T_\text{c}=2.269$. Right: PCA colored by phase, taking $T_\text{c}=2.3246$}
+    \label{fig:IsingPCA}
+\end{figure}
+
+
+\newpage
+\subsection{Square Ice Model}
+We consider the square ice model on the cubical lattice $\mathbb{Z}_N^d$ with spins located on edges between adjacent vertices taking values in $\{{-1},1\}$. The Hamiltonian is
+\begin{equation}
+    H = \sum_v\Big(\sum_{i\in v}s_i\Big)^2
+\end{equation}
+where $v\in\mathbb{Z}_N^d$ and by $i\in v$ we mean those edges connecting to the vertex $v$. We work with a finite lattice of $dN^d$ spins and periodic boundary conditions. At $T=0$ the energy per spin is zero and at $T=\infty$ the energy per spin is two.
+
+This model has a (?-order) phase transition for all $d\geq 2$ as the spin-spin correlation functions go from being power-law at low temperatures to exponentially decaying at high temperatures.
+
+To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use a Monte Carlo algorithm with the following parameters:
+\begin{align}
+    2d&\sim\left\{\begin{array}{l}
+        N = 50\\
+        \{T_i\} = \{0.0,0.1,\ldots,4.0\}\\
+        N_\text{sim} = 1000(?)\\
+        K = 200
+    \end{array}\right. & 3d&\sim\left\{\begin{array}{l}
+        N = 15\\
+        \{T_i\} = \{0.0,0.1,\ldots,4.0\}\\
+        N_\text{sim} = 1000(?)\\
+        K = 200
+    \end{array}\right.
+\end{align}
+Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:SquareiceExampleConfigs}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=0.png}
+    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=inf.png}
+    \caption{Example configurations for square ice model at $T=0$ (left) and $T=\infty$ (right).}
+    \label{fig:SquareiceExampleConfigs}
+\end{figure}
+
+
+\subsection{$\mathbb{Z}_2$-Gauged Ising Model}
+(see [\textit{Gauge fields...}, Balian et.al.])
+
+A variant of the classical Ising model where the global $\mathbb{Z}_2$ symmetry has been promoted to a local (gauge) symmetry is considered as well. The model is defined on the cubical lattice $\mathbb{Z}_N^d$ with spins located on edges between adjacent vertices taking values in $\{{-1},1\}$. The Hamiltonian is
+\begin{equation}
+    H = - \sum_f\prod_{i\in f}s_i
+\end{equation}
+where $f$ denote faces, or plaquettes, and by $i\in f$ we mean those four edges consisting of the boundary of $f$. The local $\mathbb{Z}_2$ symmetry corresponds to $H$ being invariant under the flipping of all $2d$ spins on edges connected to any single vertex (this necessarily flips either zero or two spins on each plaquette). We work with a finite lattice of $dN^d$ spins and periodic boundary conditions. At $T=0$ the energy per spin is $\frac{1-d}{2}$ and at $T=\infty$ the energy per spin is zero.
+
+The gauge-invariance guarantees that there is no spontaneous magnetization, and restricting gauge-invariant observables rules out considering spin-spin correlation functions. An appropriate observable is found by considering a closed path $C$ in the lattice and the expectation value of the product of the spins around this path. In dimensions $d>2$ a phase transition is signalled by a change in such correlation functions: at low temperature one finds a ``perimeter law",
+\begin{equation}
+    \Big\langle\prod_C s_i\Big\rangle \sim e^{-h(\beta)L}
+\end{equation}
+while at high temperatures one finds an ``area law",
+\begin{equation}
+    \Big\langle\prod_C s_i\Big\rangle \sim e^{-f(\beta)A}
+\end{equation}
+for $L$ the length of the path $C$ and $A$ the minimum number of plaquettes needed to span $C$. The arguments which lead to these expressions do not apply in $d=2$ (see section V.D.~of [\textit{An introduction...}, Kogut]) as the radius of convergence for the validity of the perimeter law is zero. One may also understand the special case of $d=2$ as being a consequence of the equivalence
+\begin{equation}
+    \big(\text{2d }\mathbb{Z}_2\text{-gauged Ising model}\big) = \big( \text{1d classical Ising model} \big)
+\end{equation}
+found by comparing the partition functions of the two models after having chosen a convenient gauge. One can, however, still hope to distinguish between high and low temperature spin configurations, as correlation length does change with temperature.
+
+For $d>2$ we can hope to do more: not only identify high and low temperature configuration but also determine the critical temperature at which one shifts from a perimeter to area law.
+
+To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use a Monte Carlo algorithm with the following parameters:
+\begin{align}
+    2d&\sim\left\{\begin{array}{l}
+        N = 50\\
+        \{T_i\} = \{0,?\}\\
+        N_\text{sim} = 1000(?)\\
+        K = 200
+    \end{array}\right. & 3d&\sim\left\{\begin{array}{l}
+        N = 15\\
+        \{T_i\} = \{?\}\\
+        N_\text{sim} = 1000(?)\\
+        K = 200
+    \end{array}\right.
+\end{align}
+Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:GaugedExampleConfigs}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=0.png}
+    \includegraphics[width=0.3\textwidth]{gauged_images/gauged_T=inf.png}
+    \caption{Example configurations for the $\mathbb{Z}_2$-gauged Ising model at $T=0$ (left) and $T=\infty$ (right).}
+    \label{fig:GaugedExampleConfigs}
+\end{figure}
+
+
 
 
 
