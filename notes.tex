@@ -57,12 +57,12 @@ The persistence image is then the vector obtained by integrating $\rho$ over a s
 \end{align}
 This process can be done for $H_0,H_1,\ldots$ and the respective vectors adjoined or treated separately. Ultimately, we have now a vector in $\mathbb{R}^n$ ($n$ not too large!) which is a representation of the homological structure of the original data set.
 
-\begin{figure}[b]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.3\textwidth]{pd_example}
     \includegraphics[width=0.3\textwidth]{rho_example}
     \includegraphics[width=0.3\textwidth]{pi_example}
-    \caption{Example PD$\rightarrow\rho\rightarrow$PI process.}
+    \caption{Example PD$\rightarrow\rho\rightarrow$PI process. Because of the lattice structure many points in the persistence diagram coincide.}
 \end{figure}
 
 (The above should be altered slightly for $H_0$ since in this case the persistence data are essentially one-dimensional.)
@@ -93,6 +93,7 @@ After having created these persistence images we have the following methods for 
 
 The models we choose are increasing non-local. We begin with the classical Ising model, which is exactly solved for $d=2$ and very well-studied for $d=3$. This is the easiest to classify into two phases based on the spontaneous magnetization below the critical temperature. Next is the square-ice (a.k.a.~16 vertex) model, which has no spontaneous magnetization but rather a transition from power-law to exponentially decaying spin-spin correlation functions. Finally, the $\mathbb{Z}_2$-gauged Ising model has a local gauge symmetry which implies no spontaneous magnetization and requiresgauge-invariant to be gauge-invariant in order that they be well-defined. By considering correlation functions aroung loops in the lattice, one finds a phase transition from ``perimeter'' to ``area'' law for $d\geq 3$: there is no phase transition for $d=2$.
 
+\newpage
 \subsection{Classical Ising Model}
 For the classical Ising model in $d$ dimensions one uses the cubical lattice $\mathbb{Z}_N^d$ with spins located at the vertices taking values in $\{{-1},1\}$. Interactions are local, being between pairs of adjacent spins. The Hamiltonian is
 \begin{equation}
@@ -118,7 +119,7 @@ To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use 
         K = 20
     \end{array}\right.
 \end{align}
-Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:IsingExampleConfigs}.
+Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:IsingExampleConfigs}. Since the persistence diagrams often extend to $b,p\sim 25$ we use $1\times 1$ pixels extending out to $b=25$ and $p=25$ (persistence images are elements of $\mathbb{R}^{625}$).
 
 \begin{figure}[h]
     \centering
@@ -128,20 +129,7 @@ Examples of low- and high-temperature spin configurations are shown in figure~\r
     \label{fig:IsingExampleConfigs}
 \end{figure}
 
-\subsubsection{Logistic Regression}
-For $d=2$ we label persistence images to be in the ordered phase for $T<2.269$. The logistic regression depends heavily on small, short-lived cycles to distinguish between the ordered and disordered phases (see left of figure~\ref{fig:IsingLogReg}). Accuracy is near 100\% for most temperatures, and the cross-over point occurs at $T\approx 2.2796$.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg_2d_ising}
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg_acc_2d_ising}
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg_avg_2d_ising}
-    \caption{Left: absolute value of coefficients for logistic regression. Center: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
-    \label{fig:IsingLogReg}
-\end{figure}
-
-There are few surprizes here - the spontaneous magnetization allows for an easy classification based on the number of small islands of minority spins. In fact one could do a logistic regression on the raw spin configurations and achieve the same result, as it can effectively reconstruct the order parameter, $m=\ev{|\sum s_i|}$.
-
+\newpage
 \subsubsection{$k$-Means}
 Here the clustering algorithm separates the training persistence images into two clusters. For $d=2$ the critical temperature is estimated as $T_\text{c}\approx 2.3246$ (see figure~\ref{ref:IsingKmeans}). This is within 2.5\% of the exact value of $T_\text{c}$ in the thermodynamic limit, a discrepancy which is easily attributed to finite-$N$ effects.
 
@@ -153,20 +141,35 @@ Here the clustering algorithm separates the training persistence images into two
     \label{ref:IsingKmeans}
 \end{figure}
 
+
+\subsubsection{Logistic Regression}
+For $d=2$ we label persistence images to be in the ordered phase for $T<2.269$. The logistic regression depends heavily on small, short-lived cycles to distinguish between the ordered and disordered phases (see left of figure~\ref{fig:IsingLogReg}). Accuracy is near 100\% for most temperatures, and the cross-over point occurs at $T\approx 2.2796$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.24\textwidth]{ising_images/logreg_2d_ising}
+    \includegraphics[width=0.24\textwidth]{ising_images/logreg2_2d_ising}
+    \includegraphics[width=0.24\textwidth]{ising_images/logreg_acc_2d_ising}
+    \includegraphics[width=0.24\textwidth]{ising_images/logreg_avg_2d_ising}
+    \caption{Left: coefficients for logistic regression with $C=0.1$ and $L_2$ penalty. Left center: coefficients for logistic regression with $C=0.01$ and $L_2$ penalty. Right center: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.2796$.}
+    \label{fig:IsingLogReg}
+\end{figure}
+
+There are few surprises here - the spontaneous magnetization allows for an easy classification based on the number of small islands of minority spins. In fact one could do a logistic regression on the raw spin configurations and achieve the same result, as it can effectively reconstruct the order parameter, $m=\ev{|\sum s_i|}$.
+
 \subsubsection{PCA}
 PCA for $d=2$ leads to a clear trend in temperature (judging from other work, diagram would be symmetric if we chose majority/minority spins randomly).
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{ising_images/pca_2d_ising}
-    \includegraphics[width=0.3\textwidth]{ising_images/pca_phase_2d_ising}
-    \includegraphics[width=0.3\textwidth]{ising_images/pca_phase2_2d_ising}
-    \caption{Left: PCA colored by temperate. Center: PCA colored by phase, taking $T_\text{c}=2.269$. Right: PCA colored by phase, taking $T_\text{c}=2.3246$}
+    \includegraphics[width=0.24\textwidth]{ising_images/pca_2d_ising}
+    \includegraphics[width=0.24\textwidth]{ising_images/pca_phase_2d_ising}
+    \includegraphics[width=0.24\textwidth]{ising_images/pca_phase2_2d_ising}
+    \caption{Left: PCA colored by temperature. Center: PCA colored by phase, taking $T_\text{c}=2.269$. Right: PCA colored by phase, taking $T_\text{c}=2.3246$}
     \label{fig:IsingPCA}
 \end{figure}
 
 
-\newpage
 \subsection{Square Ice Model}
 We consider the square ice model on the cubical lattice $\mathbb{Z}_N^d$ with spins located on edges between adjacent vertices taking values in $\{{-1},1\}$. The Hamiltonian is
 \begin{equation}
@@ -190,17 +193,51 @@ To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use 
         K = 200
     \end{array}\right.
 \end{align}
-Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:SquareiceExampleConfigs}.
+Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:SquareiceExampleConfigs}. Since the persistence diagrams are very concentrated near the origin, we use $0.5\times0.5$ pixels extending out to $b=5$ and $p=5$ (persistence images are elements of $\mathbb{R}^{100}$).
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=0.png}
-    \includegraphics[width=0.3\textwidth]{squareice_images/squareice_T=inf.png}
+    \includegraphics[width=0.28\textwidth]{squareice_images/squareice_T=0.png}
+    \includegraphics[width=0.28\textwidth]{squareice_images/squareice_T=inf.png}
     \caption{Example configurations for square ice model at $T=0$ (left) and $T=\infty$ (right).}
     \label{fig:SquareiceExampleConfigs}
 \end{figure}
 
+\newpage
+\subsubsection{$k$-Means}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.3\textwidth]{squareice_images/kmeans_2d_squareice}
+	\includegraphics[width=0.3\textwidth]{squareice_images/kmeans_avg_2d_squareice}
+	\caption{Left: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.0166$.}
+\end{figure}
+
+
+\subsubsection{Logistic Regression}
+Labelling persistence images using the critical temperature found by $k$-means clustering, can train logistic regression.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{squareice_images/logreg_2d_squareice}
+    \includegraphics[width=0.3\textwidth]{squareice_images/logreg_acc_2d_squareice}
+    \includegraphics[width=0.3\textwidth]{squareice_images/logreg_avg_2d_squareice}
+    \caption{Left: coefficients for logistic regression with $C=0.1$ and $L_2$ penalty. Center: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.0527$.}
+    \label{fig:SquareiceLogReg}
+\end{figure}
+
+
+\subsubsection{PCA}
+For $d=2$ we have a clear trend in temperature and the projection of the $k$-means clusters reveals the two-cluster structure.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.25\textwidth]{squareice_images/pca_2d_squareice}
+    \includegraphics[width=0.26\textwidth]{squareice_images/pca_phase_2d_squareice}
+    \caption{Left: PCA colored by temperature. Right: PCA colored by phase, taking $T_\text{c}\approx2.02$.}
+    \label{fig:SquareicePCA}
+\end{figure}
+
+\newpage
 \subsection{$\mathbb{Z}_2$-Gauged Ising Model}
 (see [\textit{Gauge fields...}, Balian et.al.])
 
@@ -210,13 +247,13 @@ A variant of the classical Ising model where the global $\mathbb{Z}_2$ symmetry 
 \end{equation}
 where $f$ denote faces, or plaquettes, and by $i\in f$ we mean those four edges consisting of the boundary of $f$. The local $\mathbb{Z}_2$ symmetry corresponds to $H$ being invariant under the flipping of all $2d$ spins on edges connected to any single vertex (this necessarily flips either zero or two spins on each plaquette). We work with a finite lattice of $dN^d$ spins and periodic boundary conditions. At $T=0$ the energy per spin is $\frac{1-d}{2}$ and at $T=\infty$ the energy per spin is zero.
 
-The gauge-invariance guarantees that there is no spontaneous magnetization, and restricting gauge-invariant observables rules out considering spin-spin correlation functions. An appropriate observable is found by considering a closed path $C$ in the lattice and the expectation value of the product of the spins around this path. In dimensions $d>2$ a phase transition is signalled by a change in such correlation functions: at low temperature one finds a ``perimeter law",
+The gauge-invariance guarantees that there is no spontaneous magnetization, and restricting to gauge-invariant observables rules out considering spin-spin correlation functions. An appropriate observable is found by considering a closed path $C$ in the lattice and the expectation value of the product of the spins around this path. In dimensions $d>2$ a phase transition is signalled by a change in such correlation functions: at low temperature one finds a ``perimeter law",
 \begin{equation}
-    \Big\langle\prod_C s_i\Big\rangle \sim e^{-h(\beta)L}
+    \Big\langle\prod_C s_i\Big\rangle \sim e^{-h(\beta)L} \qquad\qquad h(\beta) = 2e^{-4(d-1)\beta} + \cdots
 \end{equation}
 while at high temperatures one finds an ``area law",
 \begin{equation}
-    \Big\langle\prod_C s_i\Big\rangle \sim e^{-f(\beta)A}
+    \Big\langle\prod_C s_i\Big\rangle \sim e^{-f(\beta)A} \qquad\qquad f(\beta) = -\log\operatorname{arctanh}{\beta} + \cdots
 \end{equation}
 for $L$ the length of the path $C$ and $A$ the minimum number of plaquettes needed to span $C$. The arguments which lead to these expressions do not apply in $d=2$ (see section V.D.~of [\textit{An introduction...}, Kogut]) as the radius of convergence for the validity of the perimeter law is zero. One may also understand the special case of $d=2$ as being a consequence of the equivalence
 \begin{equation}
