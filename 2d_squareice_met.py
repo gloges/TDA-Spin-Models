@@ -1,5 +1,5 @@
 import numpy as np
-#import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as pyplot
 import os
 import sys
 import time
@@ -14,16 +14,16 @@ import time
 
 N = 50  # Size of grid is NxN (2*N^2 total spins)
 
-# T = 0.001   # Temperature
-T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
+# T = 0.0001   # Temperature
+# T = float(sys.argv[1]) / float(sys.argv[2])   # Read in temp from cp args
 
-K = 200   # Average number of flips per spin
+K = 25   # Average number of flips per spin
 
 choices = [-1, 1]   # Values to choose from to initialize grid
 
-display = False
-save = True
-progress = True
+display = True
+save = False
+progress = False
 
 
 # Returns randomized grid
@@ -99,7 +99,12 @@ def majSpinPosn(g):
 
     return majPosn
 
-for counter in np.arange(1000):
+
+eData = np.empty([0, 2])
+
+
+for T in np.arange(0.05, 6, 0.1):
+    print(T)
     # Initialize grid of spins
     grid = randomGrid()
 
@@ -115,7 +120,9 @@ for counter in np.arange(1000):
         grid = wash(grid)
         m = np.append(m, np.average(grid))
         e = np.append(e, energy(grid))
+    eData = np.append(eData, [[T, e[-1]]], axis=0)
 
+    # print(eData)
 
     if save:
         # Save the locations of those spins which are aligned with the majority
@@ -136,17 +143,23 @@ for counter in np.arange(1000):
         np.savetxt(filename, toSave, fmt='%.1f')
 
 
-'''if display:
+if display:
     # Plot the magnitization as a function of number of washes,
     # and display the final spin configuration
     majPosn = majSpinPosn(grid)
 
     fig, axes = pyplot.subplots(1, 2, figsize=(10, 4))
-    axes[0].plot(m)
-    axes[1].plot(e)
+    axes[0].plot(e)
+    axes[1].plot(m)
     pyplot.show()
 
     pyplot.figure(figsize=(5, 5))
     pyplot.scatter(majPosn[:, 0], majPosn[:, 1], marker='.', s=10, c='k')
     pyplot.axis('off')
-    pyplot.show()'''
+    pyplot.show()
+
+
+print(eData)
+
+pyplot.scatter(eData[:, 0], eData[:, 1], marker='o', s=5)
+pyplot.show()
