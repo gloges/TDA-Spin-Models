@@ -6,6 +6,9 @@
 \usepackage{physics}
 \usepackage{graphicx}
 
+\usepackage{tikz}
+\usetikzlibrary{shapes.multipart}
+
 \usepackage{subcaption}
 
 \usepackage{hyperref}
@@ -42,7 +45,7 @@ For any discrete data set, persistent homology entails a sequence of simplicial 
 The persistence diagram contains information about the size of features in the data. Since such topological data are robust against small perturbations in the original data set, TDA is a useful tool in statistical analyses of many systems.
 
 
-(Why persistence image is necessary... robustness against sudden appearence of cycles, small perturbations in persistence data, \&c.) To create the persistence image, begin by transforming the persistence data to $\{(b_i,p_i)\}=\{(b_i,d_i-b_i)\}$. Each point is then smoothed, which allows for small perturbations in the topological data to have small effects. Choosing gaussians of fixed width, the full density is
+(Why persistence image is necessary... robustness against sudden appearence of cycles, small perturbations in persistence data, \&c.) To create the persistence image, begin by transforming the persistence data to $\{(b_i,p_i)\}=\{(b_i,d_i-b_i)\}$. Each point is then smoothed, which allows for perturbations in the topological data to have small effects. Choosing gaussians of fixed width, the full density is
 \begin{align}
     \rho(x,y) &= \sum_i w(b_i,p_i)\;\frac{1}{2\pi\sigma^2}\exp\left[-\frac{(x-b_i)^2+(y-p_i)^2}{2\sigma^2}\right]
 \end{align}
@@ -64,7 +67,7 @@ This process can be done for $H_0,H_1,\ldots$ and the respective vectors adjoine
     \includegraphics[width=0.3\textwidth]{pd_example}
     \includegraphics[width=0.3\textwidth]{rho_example}
     \includegraphics[width=0.3\textwidth]{pi_example}
-    \caption{Example PD$\rightarrow\rho\rightarrow$PI process. Because of the lattice structure many points in the persistence diagram coincide.}
+    \caption{Example PD $\rightarrow\rho\rightarrow$ PI process. Because of the lattice structure many points in the persistence diagram coincide.}
 \end{figure}
 
 (The above should be altered slightly for $H_0$ since in this case the persistence data are essentially one-dimensional.)
@@ -76,7 +79,7 @@ Here we will apply the techniques of TDA to lattice spin systems. The traditiona
 
 We take as data the physical locations of spins which all point in the same direction as the majority of spins after reaching equilibrium with a thermal bath. To generate sample spin configurations, we use Monte Carlo methods, characterized by the following:
 \begin{itemize}
-    \item $N$: Linear size of periodic lattice. May not correspond to number of spins, e.g.~if spins are not on vertices but on edges.
+    \item $L$: Linear size of periodic lattice. May not correspond to number of spins, e.g.~if spins are not on vertices but on edges.
     \item $\{T_i\}$: Collection of temperatures used.
     \item $N_\text{sim}$: Number of simulations at each temperature.
     \item $K$: Measure of the number of Monte Carlo iterations, being the average number of flips per spin.
@@ -98,132 +101,167 @@ The models we choose are increasing non-local. We begin with the classical Ising
 
 \newpage
 \section{Classical Ising Model}
-For the classical Ising model in $d$ dimensions one uses the cubical lattice $\mathbb{Z}_N^d$ with spins located at the vertices taking values in $\{{-1},1\}$. Interactions are local, being between pairs of adjacent spins. The Hamiltonian is
+As a first example we apply these techniques to the classical Ising model on a cubical lattice. In $d$ dimensions, the Hamiltonian is
 \begin{equation}
-    H = -\sum_{\langle i,j\rangle}s_is_j
+	H = -\sum_{\langle i,j\rangle}s_is_j \,,
 \end{equation}
-where $\langle i,j\rangle$ denotes all nearest-neighbor pairs. We work with a finite lattice of $N^d$ spins and periodic boundary conditions. At $T=0$ the energy per spin is $-d$ and at $T=\infty$ the energy per spin is zero.
-
-The Ising model has a second-order phase transition for all $d\geq 2$, characterized by a spontaneous magnetization at low temperatures. In the thermodynamic limit, $N\to\infty$, the critical temperatures in 2d and 3d are $T_\text{c}\approx 2.269$ and $T_\text{c}\approx4.512$, respectively. With finite $N$ we expect the critical temperatures to be shifted slightly.
-
-Away from the critical point spin-spin correlation functions decay exponentially, but at the critical point they follow a power-law ($\ev{s_0s_r}\sim r^{-1/4}$ in 2d and $\ev{s_0s_r}\sim r^{-1.036}$ in 3d), i.e.~the correlation length diverges. TO DO: can these critical exponents be extracted from the persitence diagrams/images?
-
-To sample configurations weighted by the Boltzmann factor $e^{-\beta H}$ we use the Wolff cluster algorithm with the following parameters:
-\begin{align}
-    2d&\sim\left\{\begin{array}{l}
-        N = 50\\
-        \{T_i\} = \{1.00,1.05,\ldots,3.50\}\\
-        N_\text{sim} \approx 1400 (?)\\
-        K = 20
-    \end{array}\right. & 3d&\sim\left\{\begin{array}{l}
-        N = 15\\
-        \{T_i\} = \{3.00,3.05,\ldots,6.00\}\\
-        N_\text{sim} = 1000 (?)\\
-        K = 20
-    \end{array}\right.
-\end{align}
-Examples of low- and high-temperature spin configurations are shown in figure~\ref{fig:IsingExampleConfigs}.
+where $s_i\in\{-1,1\}$ and the sum is over nearest-neighbor vertices of $\mathbb{Z}_L^d$. For all $d\geq2$ there is a second-order phase transition from a disordered phase at high temperatures to an ordered phase at low temperatures. In the thermodynamic limit this critical point is at $T_\text{c}=2/\log{(1+\sqrt{2})}\approx 2.269$ for $d=2$ and $T_\text{c}\approx 4.512$ for $d=3$.
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.3\textwidth]{ising_images/ising_T=150.png}
-    \includegraphics[width=0.3\textwidth]{ising_images/ising_T=inf.png}
-    \caption{Example configurations for 2d Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
-    \label{fig:IsingExampleConfigs}
+	\centering
+	\begin{tikzpicture}[every text node part/.style={align=center}]
+		\draw[very thick] (0,0) -- (6,0);
+		\draw[fill=black] (0,0) circle (0.1);
+		\draw[fill=black] (6,0) circle (0.1);
+		\draw[thick] (3,-0.15) -- (3,0.15);
+		\node[below] at (0,-0.1) {$0$};
+		\node[below] at (6,-0.1) {$\infty$};
+		\node[below] at (3,-0.15) {$T_\text{c}$};
+		\node[above] at (1.5,0) {Ordered\\ $\ev{m}\neq0$};
+		\node[above] at (4.5,0) {Disordered\\ $\ev{m}=0$};
+	\end{tikzpicture}
+	\caption{Phase diagram for $d\geq2$ classical Ising model with no external field.}
 \end{figure}
 
-\subsection{2d Results}
+The presence of spontaneous magnetization as an order parameter makes it easy to distinguishing the two phases by inspection. Examples of spin configurations in the two phases for $d=2$ are shown in figure~\ref{fig:2dIsingExConfigs}.
+\begin{figure}[b]
+	\centering
+	\includegraphics[width=0.35\textwidth]{ising_images/ising_T=150.png}
+	\includegraphics[width=0.35\textwidth]{ising_images/ising_T=inf.png}
+	\caption{Example configurations for 2d Ising model at $T=1.5$ (left) and $T=\infty$ (right).}
+	\label{fig:2dIsingExConfigs}
+\end{figure}
 
-\subsubsection{$k$-Means}
-Here the clustering algorithm separates the training persistence images into two clusters. For $d=2$ the critical temperature is estimated as $T_\text{c}\approx 2.3246$ (see figure~\ref{ref:IsingKmeans}). This is within 2.5\% of the exact value of $T_\text{c}$ in the thermodynamic limit, a discrepancy which is easily attributed to finite-$N$ effects.
+$\vdots$\\
+
+To generate samples weighted by the Boltzmann factor $e^{-\beta H}$, we use the Wolff cluster algorithm on a period lattice with the following parameters:
+\begin{equation}
+	2d\sim\left\{\begin{aligned}
+		L &= 50\\
+		\{T_i\} &= \{1.00,1.05,\ldots,3.50\}\\
+		N_\text{sim} &= 1400\\
+		K &= 20
+	\end{aligned}\right. \qquad 3d\sim\left\{\begin{aligned}
+		L &= 15\\
+		\{T_i\} &= \{3.00,3.05,\ldots,6.00\}\\
+		N_\text{sim} &= \\
+		K &= 20
+	\end{aligned}\right.
+\end{equation}
+For 2d the persistence diagrams regularly extend out to $b,p\sim25$, and so we choose to create the persistence images using a grid of $25^2$ $1\times1$ pixels. Three such persistence images are shown in figure~\ref{fig:2dExPerIm}.
+\begin{figure}[t]
+	\centering
+%	\includegraphics[width=0.3\textwidth]{ising_images/}
+%	\includegraphics[width=0.3\textwidth]{ising_images/}
+%	\includegraphics[width=0.3\textwidth]{ising_images/}
+	\caption{Example $H_1$ persistence images for 2d Ising model at $T=1.00$ (left), $T=2.30$ (center) and $T=3.50$ (right).}
+	\label{fig:2dExPerIm}
+\end{figure}
+
+
+
+Performing PCA on the persistence images, which live in $\mathbb{R}^{625}$, reveals a striking trend with temperature. The asymmetry in the distribution is due to our choice to always choose the locations of the majority spins (see, e.g., FIG.~5 of [\href{https://arxiv.org/pdf/1703.02435.pdf}{1703.02435}]).
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.3\textwidth]{ising_images/kmeans_2d_ising}
-    \includegraphics[width=0.3\textwidth]{ising_images/kmeans_avg_2d_ising}
-    \caption{Left: accuracy on testing data. Right: average classification on testing data. The cross-over point gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$.}
-    \label{ref:IsingKmeans}
+	\centering
+	\includegraphics[width=0.4\textwidth]{ising_images/pca_2d_ising}
+	\caption{\textbf{IMAGE NOT UP TO DATE} PCA for $H_1$ persistence images of 2d Ising model, colored by temperature.}
+	\label{}
 \end{figure}
 
-
-\subsubsection{Logistic Regression}
-For $d=2$ the critical temperature in the thermodynamic limit is $T_\text{c}\approx 2.269$. Given that we are working with a finite lattice, we use several labelling schemes in the supervised training. Configurations with $T<T_\text{c-o}$ are labelled as begin in the ordered phase. We test three choices for $T_\text{c-o}$: 2.019, 2.269 and 2.519(??). In all cases the logistic regression learns the order parameter (magnetization), by identifying small, short-lived features as the most important for distinguishing the two phases.
-
+Performing a $k$-means clustering on the 2d $H_1$ persistence images easily separates the data into two clusters. The average cluster label assigned at each temperature is shown in figure~\ref{fig:kMeansAve2dIsing}. The temperature at which half of the samples are placed into each cluster gives an estimate for the critical temperature, $T_\text{c}\approx 2.3246$, with a discrepancy easily attributed to the finite lattice size.
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg_2d_ising}
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg2_2d_ising}
-    \includegraphics[width=0.32\textwidth]{ising_images/logreg_acc_2d_ising}
-    \caption{Left: coefficients for logistic regression with $C=0.1$ and $L_2$ penalty. Center: coefficients for logistic regression with $C=0.01$ and $L_2$ penalty. Right: accuracy on testing data.}
-    \label{fig:IsingLogReg}
+	\centering
+	\includegraphics[width=0.4\textwidth]{ising_images/kmeans_avg_2d_ising}
+	\caption{$k$-means clustering for $H_1$ persistence images of 2d Ising model.}
+	\label{fig:kMeansAve2dIsing}
 \end{figure}
+
+$\vdots$
+
+Supervised learning using a logistic regression on the persistence images allows us to identify which topological features are most important in discerning between the two phases. This supervised learning requires the training data to be labelled by phase. To confirm the robustness of this method and account for finite-$L$ effects, we use three labelling schemes characterized by a cut-off temperature, $T_\text{co}\in \{T_\text{c}-0.25,T_\text{c},T_\text{c}+0.25\}$; samples with temperature below $T_\text{co}$ are labelled as being in the ordered phase. The resulting logistic regression coefficients are shown in figure~\ref{fig:LogRegCoef2dIsing}. We see that in all three cases the order parameter has been recovered; the ordered phase is characterized by small, short-lived 1-cycles which we may interpret as small, isolated islands of minority spins.
 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.3\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{ising_images/logreg_2d_2019}
-		\subcaption{$T_\text{c-o}=2.019$}
+		\subcaption{$T_\text{co}=T_\text{c}-0.25$}
 	\end{subfigure}
 	\begin{subfigure}{0.3\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{ising_images/logreg_2d_ising}
-		\subcaption{$T_\text{c-o}=2.269$}
+		\subcaption{$T_\text{co}=T_\text{c}$}
 	\end{subfigure}
 	\begin{subfigure}{0.3\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{ising_images/logreg_2d_2519}
-		\subcaption{$T_\text{c-o}=2.519$}
+		\subcaption{$T_\text{co}=T_\text{c}+0.25$}
 	\end{subfigure}
 	\caption{Comparison of logistic regression coefficients for three cut-off temperatures for the labelling of the training data.}
+	\label{fig:LogRegCoef2dIsing}
 \end{figure}
 
-There are few surprises here -- the spontaneous magnetization allows for an easy classification based on the number of small islands of minority spins. In fact one could do a logistic regression on the raw spin configurations and achieve the same result, as it can effectively reconstruct the order parameter, $m=\ev{|\sum s_i|}$.
-
-\subsubsection{PCA}
-PCA for $d=2$ leads to a clear trend in temperature (judging from other work, diagram would be symmetric if we chose majority/minority spins randomly).
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.24\textwidth]{ising_images/pca_2d_ising}
-    \includegraphics[width=0.24\textwidth]{ising_images/pca_phase_2d_ising}
-    \includegraphics[width=0.24\textwidth]{ising_images/pca_phase2_2d_ising}
-    \caption{Left: PCA colored by temperature. Center: PCA colored by phase, taking $T_\text{c}=2.269$. Right: PCA colored by phase, taking $T_\text{c}=2.3246$}
-    \label{fig:IsingPCA}
-\end{figure}
+(\textbf{REPEAT ALL FOR 3d})
 
 
-\subsubsection{Critical Point}
-The critical point is characterized by scale invariance, so that correlation functions follow power-laws and configurations become self-similar. Since the persistence diagrams and images capture the sizes of features in the configuration, one can hope to observe power-law behavior there as well. Using the persistence image, summing along the lines $b+p=d=\text{const.}$ gives an ``integrated" persistence image. These are then fit to a function of the form
+\subsection{Critical Phenomena}
+Near the critical temperature the classical Ising model exhibits scale-invariance and may be described in terms of a scalar CFT. Spin-spin correlation functions for large $r$ are
 \begin{equation}
-	f = c\,r^{-a}e^{-r/\xi}
+	\ev{s(r)s(0)-m^2} \sim \begin{cases}
+		e^{-r/\xi(T)} & T\neq T_\text{c}\\
+		r^{-(d-2+\eta)} & T=T_\text{c}
+	\end{cases}
 \end{equation}
-Taking the (geometric) mean of the parameters $\xi$ and $a$ across all PIs of a given temperature leads to figure~\ref{fig:Xi_a}. The ``correlation length" $\xi$ should diverge at the critical point; the peak in the $\xi(T)$ data gives an estimate for the critical temperature of $T_\text{c}=2.35\pm0.05$. We do not directly obtain any of the critical exponents for the Ising model.
+where the correlation length, $\xi(T)$, diverges at the critical temperature. The critical expenent is $\eta=1/4$ in 2d and $\eta\approx0.0363$ in 3d.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.45\textwidth]{ising_images/integrated_PI_xi}
-    \includegraphics[width=0.45\textwidth]{ising_images/integrated_PI_a}
-    \caption{``Correlation length" $\xi$ (left) and exponent $a$ (right) as functions of temperature. The peak in the $\xi(T)$ data gives another estimate for the critical temperature.}
-    \label{fig:Xi_a}
-\end{figure}
+Given that the topological data encoded in the persistence diagrams and images is ultimately a result of spins being correlated to give rise to $k$-cycles of various sizes, one could hope to study critical phenomena using TDA.
+
+From the persistence image for $H_k$ one may compute the betti number $b_k$ as a function of scale, by (...). This gives a measure of the frequency of features of a given size in the spin configuration. Fitting $b_1(r)$ to a function of the form
+\begin{equation}
+	f(r) = c\; e^{-r/\Xi} \,,
+\end{equation}	
+we find that the correlation length $\Xi$ diverges rapidly around $T_\text{c}$, reaching its largest value at $T=2.xx$.
+
+\bigskip
+(PLOT)
+\bigskip
+
+Taking a fine-grained view near the critical point where $\Xi$ diverges, we now fit $b_1(r)$ to a function of the form
+\begin{equation}
+	g(r) = c\; r^{-(d-2+H)}e^{-r/\Xi} \,.
+\end{equation}
+
+\bigskip\bigskip
+(STILL TO DO: do this fit for $T$ near $T_\text{c}$ and get best estimates for $H$ in 2d and 3d. This will almost surely not give us the critical exponent $\eta$ directly, and likely the mapping from $H\leftrightarrow\eta$ is not so nice/even possible.)
 
 
+\newpage
+\section{Spin-Glass Model}
+Perhaps this is interesting? Three phases with two order parameters in 3d (see \href{https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.43.1615}{HERE} for why 2d is not interesting). Also frustration.
 
-\subsection{3d Results}
-The essential features here are the same as for $d=2$.
+\bigskip\bigskip
 
-\subsubsection{$k$-Means}
+Take the $\pm J$ Edwards-Anderson Ising model on a cubical lattice, for which the Hamiltonian is
+\begin{equation}
+	H = -\sum_{\langle i,j\rangle}J_{ij}s_is_j \,,
+\end{equation}
+where the bonds $J_{ij}$ are assigned values $\pm1$ according to the density function
+\begin{equation}
+	\mathrm{P}(J_{ij}) = p\,\delta(J_{ij}-1) + (1-p)\,\delta(J_{ij}+1) \,.
+\end{equation}
+For $p=1$ all $J_{ij}=1$ and this reduces to the classical Ising model.
 
-\subsubsection{Logistic Regression}
-
-\subsubsection{PCA}
+For $d=3$ there are three phases: ferromagnetic, paramagnetic and spin-glass. The two order-parameters are the magnetization and ():
+\begin{equation}
+	m \equiv \frac{1}{N}\sum_is_i \,, \qquad\qquad q \equiv 
+\end{equation}
 
 
 
 \newpage
-\subsection{Square Ice Model}
+\section{Square Ice Model}
 We consider the square ice model on the cubical lattice $\mathbb{Z}_N^d$ with spins located on edges between adjacent vertices taking values in $\{{-1},1\}$. The Hamiltonian is
 \begin{equation}
     H = \sum_v\Big(\sum_{i\ni v}s_i\Big)^2
@@ -364,6 +402,8 @@ Examples of low- and high-temperature spin configurations are shown in figure~\r
 \end{figure}
 
 
+\subsection{Current Challanges}
+K-means and PCA fail, even when using just that subset of the persistence images which are most important for logReg. Why?
 
 
 
