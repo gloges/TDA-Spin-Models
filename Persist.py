@@ -5,12 +5,17 @@ import gudhi
 import os
 import time
 
-N = 50    # Hard-coded parameters to specify the folder of spin
-T = 2.27	  # configurations to run through (2d Wolff)
+N = 20    # Hard-coded parameters to specify the folder of spin
+T = 1.35	  # configurations to run through
+
+lim = 5
+bins = 10
 
 # Locate folder of spin data
 fileDir = os.path.dirname(os.path.realpath('__file__'))
-pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
+# pathNT = os.path.join(fileDir, 'Data_2d_Ising_Wolff_N=%s\%s' % (N, T))
+# pathNT = os.path.join(fileDir, 'Data_2d_Z2_Ising_Met_N=%s\%s' % (N, T))
+pathNT = os.path.join(fileDir, 'Data_3d_Z2_Ising_Met_N=%s\%s' % (N, T))
 if not os.path.exists(pathNT):
     print("Folder does not exist:", pathNT)
     quit()
@@ -76,21 +81,21 @@ fig.suptitle("T = %.2f, %s runs" % (T, len(data)))
 
 axes[0, 0].scatter(h1born, h1death, alpha=0.01)
 axes[0, 0].set_ylabel('Death')
-axes[0, 1].hist2d(h1born, h1death, bins=25, range=[[0, 25], [0, 25]],
+axes[0, 1].hist2d(h1born, h1death, bins=bins, range=[[0, lim], [0, lim]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 0].scatter(h1born, h1death - h1born, alpha=0.01)
 axes[1, 0].set_ylabel('Lifetime')
 axes[1, 0].set_xlabel('Birth')
-axes[1, 1].hist2d(h1born, h1death - h1born, bins=25, range=[[0, 25], [0, 25]],
+axes[1, 1].hist2d(h1born, h1death - h1born, bins=bins, range=[[0, lim], [0, lim]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 1].set_xlabel('Birth')
 
 axes[0, 2].scatter(h1runborn, h1rundeath, alpha=0.01)
-axes[0, 3].hist2d(h1runborn, h1rundeath, bins=25, range=[[0, 25], [0, 25]],
+axes[0, 3].hist2d(h1runborn, h1rundeath, bins=bins, range=[[0, lim], [0, lim]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 2].scatter(h1runborn, h1rundeath - h1runborn, alpha=0.01)
 axes[1, 2].set_xlabel('Birth')
-axes[1, 3].hist2d(h1runborn, h1rundeath - h1runborn, bins=25, range=[[0, 25], [0, 25]],
+axes[1, 3].hist2d(h1runborn, h1rundeath - h1runborn, bins=bins, range=[[0, lim], [0, lim]],
                   norm=colors.SymLogNorm(linthresh=1))
 axes[1, 3].set_xlabel('Birth')
 pyplot.show()
