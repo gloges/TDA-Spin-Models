@@ -406,5 +406,99 @@ Examples of low- and high-temperature spin configurations are shown in figure~\r
 K-means and PCA fail, even when using just that subset of the persistence images which are most important for logReg. Why?
 
 
+\newpage
+\section{BKT Phase Transition in 2d XY Model}
+\begin{equation}
+	H = - \sum_{\langle IJ\rangle}\cos{(\theta_I-\theta_J)}
+\end{equation}
+
+Traditional ML methods have limited success in identifying the topological BKT phase transition (see, e.g., \href{https://journals.aps.org/prb/pdf/10.1103/PhysRevB.97.045207}{PhysRevB.97.045207}), which is characterized by (un)bound (anti-)vortices and also by distinct topological sectors at low temperatures for a finite grid (labelled by winding numbers).
+
+An alternate, unsupervised approach was taken in \href{https://arxiv.org/pdf/1805.05961v1.pdf}{1805.05961v1}, where diffusion maps identify the phase transition using the raw spin data.
+
+TDA will hopefully provide another novel way...
+
+
+\begin{align*}
+	\text{Linear size of rectangular grid} &\sim L\\
+	\text{Spin configurations} &\sim \left\{ \theta_{i,j}\in S^1\;|\;(i,j)\in\mathbb{Z}_L^2 \right\}
+\end{align*}
+Finite-size scaling is known (\href{https://journals.aps.org/prb/pdf/10.1103/PhysRevB.60.11761}{PhysRevB.60.11761}), i.e.
+\begin{align*}
+	T_\text{cr}(L) &\approx T_\text{cr} + \frac{c}{(\log{L})^2}\\
+	M(L,T=T_\text{cr}) &\approx \frac{c}{L^{1/8}}
+\end{align*}
+Criticality (\href{http://kelvin.phys.s.u-tokyo.ac.jp/lecture/low_T_phys/2017/4_Kosterlitz(J.Phys.C)1974.pdf}{Kosterlitz, 1974}), $t=(T-T_\text{cr})/T_\text{cr}$:
+\begin{align*}
+	\xi &\sim \exp\big(b\,t^{-1/2}\big) \qquad\qquad t>0\\
+	\chi &\sim \xi^{2-\eta} \qquad\qquad\hspace{36pt} t>0
+\end{align*}
+where $\eta=\frac{1}{4}$ is the same as the 2d Ising model (strictly speaking the above is only well-justified for $t<0.01$). The correlation length diverges faster than any power of $t$, and so the usual critical exponent $\nu$, defined via $\xi\sim t^{-\nu}$, does not exist.
+
+\bigskip\bigskip
+
+Generating spin configurations:
+\begin{itemize}
+	\item Metropolis algorithm.
+	\item Spins are initialized to metastable topological ground state with winding numbers $(w_x,w_y)$, plus some gaussian noise with $\sigma=0.5$.
+	\item Proposed angle changes are taken from Gaussian with $\sigma=\pi/4$.
+	\item Runs until the number of accepted changes is $k\times L^2$ (have $k=20$ for now), i.e.~each spin is altered an average of $k$ times.
+\end{itemize}
+
+Test data (all with $L=20$):
+\begin{align*}
+	100\times \qquad\qquad (w_x,w_y) &= (0,0) \qquad\qquad T=0.4\\
+	100\times \qquad\qquad (w_x,w_y) &= (1,0) \qquad\qquad T=0.4\\
+	100\times \qquad\qquad (w_x,w_y) &= (0,1) \qquad\qquad T=0.4\\
+	100\times \qquad\qquad (w_x,w_y) &= (0,0) \qquad\qquad T=1.4
+\end{align*}
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{XY_images/40(0,0)pd.png}
+		\subcaption{$T=0.4$, $(w_x,w_y)=(0,0)$, $L=20$}
+	\end{subfigure}\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{XY_images/140(0,0)pd.png}
+		\subcaption{$T=1.4$, $(w_x,w_y)=(0,0)$, $L=20$}
+	\end{subfigure}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{XY_images/pca_rawanglediffs.png}
+		\subcaption{PCA on raw angle differences, $L=20$.}
+	\end{subfigure}\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{XY_images/pca_perIms.png}
+		\subcaption{PCA on (concatenated) persistence images, $L=20$.}
+	\end{subfigure}
+\end{figure}
+
+
+
+Plan/ideas:
+\begin{itemize}
+	\item Two-part diagnostic: TDA+PCA/other to identify phases. Can use naive PCA to identify topological sectors in low-temp phase.
+	\item Do finite-size scaling to extract ($L\to\infty$) critical temperature.
+	\item Can we get a critical exponent? Or perhaps simply observe non-power law behavior of correlation length?
+\end{itemize}
+
+
+\bigskip\bigskip
+
+2019/11/14
+
+Use sublevel filtration on $\theta:(x,y)\to[-\pi,\pi)$ (shifted so that $\mathbf{m}$ has angle zero). This should be able to distinguish between high/low $T$ AND some of the topological sectors. There are still degeneracies if using an $L\times L$ grid (e.g.~between $(0,1)$ and $(1,0)$).
+
+
+
 
 \end{document}
