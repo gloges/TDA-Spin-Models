@@ -6,6 +6,6 @@ Persistent homology is used on Monte-Carlo simulation of lattice spin models. Ph
 
 See the following for more details:
 
->*Quantitative and Interpretable Order Parameters for Phase Transitions with Persistent Homology* [[2009.xxxxx](https://arxiv.org/abs/2009.xxxxx)]
+>*Quantitative and Interpretable Order Parameters for Phase Transitions with Persistent Homology* [[2009.14231](https://arxiv.org/abs/2009.14231)]
 >
 >Authors: Alex Cole, Gregory J. Loges and Gary Shiu
